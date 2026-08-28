@@ -123,13 +123,13 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10 grid md:grid-cols-12 gap-8 md:gap-12 items-center w-full">
             {/* Hero Content */}
             <div className="md:col-span-6 flex flex-col gap-5 sm:gap-6">
-              <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 rounded-full glass text-on-surface-variant text-[11px] sm:text-xs font-semibold w-max shadow-sm border-white/60">
+              <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 rounded-full glass text-on-surface-variant text-[11px] sm:text-xs font-semibold w-max shadow-sm border border-outline-variant/60">
                 <span className="material-symbols-outlined text-[14px] sm:text-[15px] text-secondary">verified</span>
                 <span className="tracking-wide">Enterprise Grade Compliance</span>
               </div>
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.15] text-on-surface">
                 Navigate Global Immigration with <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-container to-secondary block mt-1">AI Precision</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-primary-container block mt-1">AI Precision</span>
               </h1>
               <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-xl leading-relaxed">
                 Automate complex visa applications through conversational intake and intelligent document parsing. Turn months of bureaucratic delays into days of confident progress.
@@ -139,7 +139,7 @@ export default function LandingPage() {
                   Start Your Application
                   <span className="material-symbols-outlined text-base sm:text-lg">rocket_launch</span>
                 </button>
-                <button onClick={() => handleAuth('admin', '/admin')} className="w-full sm:w-auto glass text-on-surface px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-bold hover:bg-white/90 transition-colors flex justify-center items-center gap-2 shadow-sm border border-outline-variant/40 cursor-pointer">
+                <button onClick={() => handleAuth('admin', '/admin')} className="w-full sm:w-auto glass bg-surface-container/60 text-on-surface px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-bold hover:bg-surface-container transition-colors flex justify-center items-center gap-2 shadow-sm border border-outline-variant cursor-pointer">
                   Admin Console
                   <span className="material-symbols-outlined text-base sm:text-lg">admin_panel_settings</span>
                 </button>
@@ -147,7 +147,7 @@ export default function LandingPage() {
 
               {/* Mobile Hero Visual Preview */}
               <div className="md:hidden mt-4">
-                <div className="glass bg-white/80 rounded-2xl p-4 shadow-ambient border border-white space-y-3">
+                <div className="glass bg-surface/90 rounded-2xl p-4 shadow-ambient border border-outline-variant space-y-3">
                   <div className="flex items-center justify-between border-b border-outline-variant/40 pb-2.5">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 bg-primary text-on-primary rounded-lg flex items-center justify-center text-xs">
@@ -163,7 +163,7 @@ export default function LandingPage() {
                     <span className="text-[9px] font-bold uppercase bg-surface-container px-2 py-0.5 rounded-full text-on-surface">Verified</span>
                   </div>
                   <div className="space-y-2 text-xs">
-                    <div className="bg-white p-2.5 rounded-xl text-on-surface shadow-2xs border border-outline-variant/30 leading-snug">
+                    <div className="bg-surface-container-lowest p-2.5 rounded-xl text-on-surface shadow-2xs border border-outline-variant/40 leading-snug">
                       📄 Document parsed! Verified passport details with 99.8% OCR accuracy.
                     </div>
                     <div className="bg-primary text-on-primary p-2.5 rounded-xl text-right ml-auto max-w-[85%] leading-snug">
@@ -188,7 +188,7 @@ export default function LandingPage() {
             {/* Desktop Hero Visual */}
             <div className="md:col-span-6 relative hidden md:block">
               {/* Main App Card */}
-              <div className="glass bg-white/70 rounded-3xl shadow-ambient-lg p-7 relative z-10 hover-lift transform rotate-1 transition-transform duration-500 hover:rotate-0 border border-white">
+              <div className="glass bg-surface/90 rounded-3xl shadow-ambient-lg p-7 relative z-10 hover-lift transform rotate-1 transition-transform duration-500 hover:rotate-0 border border-outline-variant">
                 <div className="flex items-center justify-between border-b border-outline-variant/40 pb-4 mb-5">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary text-on-primary rounded-xl flex items-center justify-center shadow-md">
@@ -197,7 +197,7 @@ export default function LandingPage() {
                     <div>
                       <div className="text-sm font-bold text-primary">Passage Assistant</div>
                       <div className="text-xs text-secondary flex items-center gap-1.5 mt-0.5">
-                        <span className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(19,105,106,0.6)]"></span> Online
+                        <span className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span> Online
                       </div>
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export default function LandingPage() {
                     <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex-shrink-0 flex items-center justify-center mt-1">
                       <span className="material-symbols-outlined text-sm">smart_toy</span>
                     </div>
-                    <div className="bg-white text-on-surface p-3.5 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/20 leading-relaxed">
+                    <div className="bg-surface-container-lowest text-on-surface p-3.5 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/30 leading-relaxed">
                       Hello! I&apos;ve successfully parsed your passport and verified your details with OCR. We are ready to review your Express Entry application. Shall we proceed?
                     </div>
                   </div>
@@ -226,8 +226,8 @@ export default function LandingPage() {
                 </div>
               </div>
               {/* Decorative Floating Card */}
-              <div className="absolute -bottom-8 -left-8 glass bg-white/90 rounded-2xl shadow-ambient-lg p-4 flex items-center gap-4 z-20 hover-lift transform -rotate-3 transition-transform duration-500 hover:rotate-0 border border-white">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-secondary to-secondary-fixed text-white shadow-md flex items-center justify-center">
+              <div className="absolute -bottom-8 -left-8 glass bg-surface/95 rounded-2xl shadow-ambient-lg p-4 flex items-center gap-4 z-20 hover-lift transform -rotate-3 transition-transform duration-500 hover:rotate-0 border border-outline-variant">
+                <div className="w-11 h-11 rounded-full bg-secondary-container text-on-secondary-container shadow-md flex items-center justify-center">
                   <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
                 </div>
                 <div>
@@ -321,13 +321,13 @@ export default function LandingPage() {
                   </li>
                 </ul>
               </div>
-              <div className="glass bg-white/70 rounded-3xl p-5 sm:p-8 border border-white shadow-ambient-lg">
+              <div className="glass bg-surface/90 rounded-3xl p-5 sm:p-8 border border-outline-variant shadow-ambient-lg">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex gap-2.5 sm:gap-3">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 text-primary flex-shrink-0 flex items-center justify-center mt-1">
                       <span className="material-symbols-outlined text-xs sm:text-sm">smart_toy</span>
                     </div>
-                    <div className="bg-surface-container-lowest text-on-surface p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/20 leading-relaxed">
+                    <div className="bg-surface-container-lowest text-on-surface p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/30 leading-relaxed">
                       I noticed you previously verified your Passport Number as A12345678. For your Germany Opportunity Card, I just need your German Language Level.
                     </div>
                   </div>
@@ -340,7 +340,7 @@ export default function LandingPage() {
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 text-primary flex-shrink-0 flex items-center justify-center mt-1">
                       <span className="material-symbols-outlined text-xs sm:text-sm">smart_toy</span>
                     </div>
-                    <div className="bg-surface-container-lowest text-on-surface p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/20 leading-relaxed">
+                    <div className="bg-surface-container-lowest text-on-surface p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/30 leading-relaxed">
                       Perfect! I have recorded your German Language Level as &quot;B2&quot;. Your Opportunity Card profile is now 100% complete.
                     </div>
                   </div>
@@ -387,33 +387,33 @@ export default function LandingPage() {
         </section>
 
         {/* Security / Compliance Section */}
-        <section className="py-14 sm:py-20 md:py-28 bg-primary text-on-primary relative overflow-hidden" id="trust">
+        <section className="py-14 sm:py-20 md:py-28 bg-surface-container-lowest border-y border-outline-variant/40 relative overflow-hidden" id="trust">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
             <div className="text-center mb-10 sm:mb-16 max-w-2xl mx-auto space-y-3">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">Enterprise-Grade Compliance &amp; Security</h2>
-              <p className="text-xs sm:text-base text-primary-fixed-dim leading-relaxed">Your applicants&apos; sensitive data is protected by industry-leading security protocols and compliance standards.</p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-on-surface">Enterprise-Grade Compliance &amp; Security</h2>
+              <p className="text-xs sm:text-base text-on-surface-variant leading-relaxed">Your applicants&apos; sensitive data is protected by industry-leading security protocols and compliance standards.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
-              <div className="bg-primary-container/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-primary-fixed/20 text-center hover-lift shadow-xl">
-                <div className="w-12 h-12 mx-auto bg-primary-fixed/10 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined text-2xl text-secondary-fixed">shield_locked</span>
+              <div className="bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant text-center hover-lift shadow-sm">
+                <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <span className="material-symbols-outlined text-2xl text-primary">shield_locked</span>
                 </div>
-                <h4 className="text-base font-bold mb-2 text-white">Zero Image Storage</h4>
-                <p className="text-xs text-primary-fixed-dim leading-relaxed">All document uploads are processed in ephemeral RAM without saving photo files to disk.</p>
+                <h4 className="text-base font-bold mb-2 text-on-surface">Zero Image Storage</h4>
+                <p className="text-xs text-on-surface-variant leading-relaxed">All document uploads are processed in ephemeral RAM without saving photo files to disk.</p>
               </div>
-              <div className="bg-primary-container/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-primary-fixed/20 text-center hover-lift shadow-xl">
-                <div className="w-12 h-12 mx-auto bg-primary-fixed/10 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined text-2xl text-secondary-fixed">policy</span>
+              <div className="bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant text-center hover-lift shadow-sm">
+                <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <span className="material-symbols-outlined text-2xl text-primary">policy</span>
                 </div>
-                <h4 className="text-base font-bold mb-2 text-white">GDPR &amp; PIPEDA Aligned</h4>
-                <p className="text-xs text-primary-fixed-dim leading-relaxed">Strict adherence to global data privacy regulations and localized PostgreSQL storage.</p>
+                <h4 className="text-base font-bold mb-2 text-on-surface">GDPR &amp; PIPEDA Aligned</h4>
+                <p className="text-xs text-on-surface-variant leading-relaxed">Strict adherence to global data privacy regulations and localized PostgreSQL storage.</p>
               </div>
-              <div className="bg-primary-container/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-primary-fixed/20 text-center hover-lift shadow-xl">
-                <div className="w-12 h-12 mx-auto bg-primary-fixed/10 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined text-2xl text-secondary-fixed">lock</span>
+              <div className="bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant text-center hover-lift shadow-sm">
+                <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <span className="material-symbols-outlined text-2xl text-primary">lock</span>
                 </div>
-                <h4 className="text-base font-bold mb-2 text-white">AES-256 Encryption</h4>
-                <p className="text-xs text-primary-fixed-dim leading-relaxed">All application state and entity extractions are encrypted at rest and in transit.</p>
+                <h4 className="text-base font-bold mb-2 text-on-surface">AES-256 Encryption</h4>
+                <p className="text-xs text-on-surface-variant leading-relaxed">All application state and entity extractions are encrypted at rest and in transit.</p>
               </div>
             </div>
           </div>
@@ -428,7 +428,7 @@ export default function LandingPage() {
               <button onClick={() => handleAuth('client', '/chat')} className="w-full sm:w-auto bg-primary hover:bg-primary-container transition-colors text-on-primary px-8 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover-lift shadow-ambient-lg cursor-pointer">
                 Start Free Application
               </button>
-              <button onClick={() => handleAuth('admin', '/admin')} className="w-full sm:w-auto glass bg-white/60 text-on-surface px-8 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white/90 transition-colors shadow-sm border border-outline-variant/40 cursor-pointer">
+              <button onClick={() => handleAuth('admin', '/admin')} className="w-full sm:w-auto glass bg-surface-container text-on-surface px-8 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-surface-container-high transition-colors shadow-sm border border-outline-variant cursor-pointer">
                 Explore Admin Dashboard
               </button>
             </div>

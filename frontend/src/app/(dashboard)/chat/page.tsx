@@ -262,7 +262,7 @@ export default function ChatIntake() {
           <span>Details & Checklist</span>
           {missingCount > 0 && (
             <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
-              mobileTab === 'details' ? 'bg-white text-primary' : 'bg-error text-white'
+              mobileTab === 'details' ? 'bg-primary-container text-on-primary-container' : 'bg-error text-on-error'
             }`}>
               {missingCount}
             </span>
