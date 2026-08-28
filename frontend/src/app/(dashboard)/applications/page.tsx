@@ -191,21 +191,21 @@ export default function ApplicationsManagementPage() {
   return (
     <div className="flex-1 flex flex-col h-full relative w-full pb-16 md:pb-0 bg-background">
       {/* Top Header Bar */}
-      <header className="bg-surface border-b border-outline-variant shadow-sm w-full z-30 flex justify-between items-center px-6 py-4 flex-shrink-0 sticky top-0">
+      <header className="bg-surface border-b border-outline-variant shadow-sm w-full z-30 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 sm:px-6 py-3.5 gap-3 flex-shrink-0 sticky top-0">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-primary-container text-on-primary-container">
-            <span className="material-symbols-outlined text-xl">folder_shared</span>
+          <div className="p-2 sm:p-2.5 rounded-xl bg-primary-container text-on-primary-container">
+            <span className="material-symbols-outlined text-lg sm:text-xl">folder_shared</span>
           </div>
           <div className="flex flex-col">
-            <h1 className="text-base font-bold text-on-surface leading-tight">My Applications</h1>
-            <p className="text-xs text-on-surface-variant mt-0.5">Manage, edit, and track all your visa submissions</p>
+            <h1 className="text-sm sm:text-base font-bold text-on-surface leading-tight">My Applications</h1>
+            <p className="text-[11px] sm:text-xs text-on-surface-variant mt-0.5">Manage, edit, and track all your visa submissions</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
           <button 
             onClick={handleStartNew}
-            className="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-opacity-90 flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-opacity-90 flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
             Start New Application
@@ -214,27 +214,27 @@ export default function ApplicationsManagementPage() {
       </header>
 
       {/* Main Canvas */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
-        <div className="max-w-6xl mx-auto space-y-6">
+      <main className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8">
+        <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
           
           {/* Controls Bar: Search & Filter */}
-          <div className="bg-surface-container-lowest rounded-2xl p-4 shadow-ambient border border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="bg-surface-container-lowest rounded-2xl p-3.5 sm:p-4 shadow-ambient border border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
             <div className="relative w-full sm:w-80">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px] sm:text-[20px]">search</span>
               <input 
                 type="text"
                 placeholder="Search by ID, country, name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-xl text-xs font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-xl text-xs font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               />
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
               <select
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
-                className="px-3 py-2 bg-surface border border-outline-variant rounded-xl text-xs font-semibold focus:border-primary outline-none cursor-pointer"
+                className="flex-1 sm:flex-none px-3 py-2 bg-surface border border-outline-variant rounded-xl text-xs font-semibold focus:border-primary outline-none cursor-pointer"
               >
                 <option value="">All Countries ({applications.length})</option>
                 {availableCountries.map(c => (
@@ -244,7 +244,7 @@ export default function ApplicationsManagementPage() {
 
               <button
                 onClick={fetchApplications}
-                className="p-2 border border-outline-variant rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors"
+                className="p-2 border border-outline-variant rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors flex-shrink-0 cursor-pointer"
                 title="Refresh applications"
               >
                 <span className="material-symbols-outlined text-[18px]">refresh</span>
@@ -259,11 +259,11 @@ export default function ApplicationsManagementPage() {
               <p className="text-sm font-semibold">Loading your applications...</p>
             </div>
           ) : filteredApplications.length === 0 ? (
-            <div className="bg-surface-container-lowest rounded-2xl p-12 text-center border border-outline-variant shadow-ambient space-y-4">
-              <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mx-auto text-outline">
-                <span className="material-symbols-outlined text-4xl">folder_off</span>
+            <div className="bg-surface-container-lowest rounded-2xl p-8 sm:p-12 text-center border border-outline-variant shadow-ambient space-y-4">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-surface-container flex items-center justify-center mx-auto text-outline">
+                <span className="material-symbols-outlined text-3xl sm:text-4xl">folder_off</span>
               </div>
-              <h3 className="text-lg font-bold text-on-surface">No Applications Found</h3>
+              <h3 className="text-base sm:text-lg font-bold text-on-surface">No Applications Found</h3>
               <p className="text-xs text-on-surface-variant max-w-md mx-auto leading-relaxed">
                 {searchQuery || selectedCountry 
                   ? "No applications matched your search criteria. Try clearing the filter."
@@ -271,14 +271,14 @@ export default function ApplicationsManagementPage() {
               </p>
               <button
                 onClick={handleStartNew}
-                className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-xs font-bold inline-flex items-center gap-2 hover:bg-opacity-90 shadow-sm transition-all"
+                className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-xs font-bold inline-flex items-center gap-2 hover:bg-opacity-90 shadow-sm transition-all cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 Start First Application
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredApplications.map(app => {
                 const name = getApplicantName(app.extracted_data);
                 const completeness = app.completeness ?? 0;
@@ -293,7 +293,7 @@ export default function ApplicationsManagementPage() {
                     className="bg-surface-container-lowest rounded-2xl shadow-ambient border border-outline-variant hover:border-primary/50 transition-all flex flex-col justify-between overflow-hidden group shadow-ambient-hover"
                   >
                     {/* Card Header */}
-                    <div className="p-5 border-b border-outline-variant/60 bg-surface/50 space-y-3">
+                    <div className="p-4 sm:p-5 border-b border-outline-variant/60 bg-surface/50 space-y-2.5 sm:space-y-3">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2">
                           <span className="px-2.5 py-0.5 bg-primary-fixed text-primary text-xs font-bold rounded-lg border border-primary/20">
@@ -312,7 +312,7 @@ export default function ApplicationsManagementPage() {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => openEditModal(app)}
-                            className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
+                            className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
                             title="Edit Application Details"
                           >
                             <span className="material-symbols-outlined text-[18px]">edit</span>
@@ -320,7 +320,7 @@ export default function ApplicationsManagementPage() {
                           <button
                             onClick={() => handleDelete(app.case_id)}
                             disabled={isDeleting === app.case_id}
-                            className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container rounded-lg transition-colors disabled:opacity-50"
+                            className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                             title="Delete Application"
                           >
                             <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -329,7 +329,7 @@ export default function ApplicationsManagementPage() {
                       </div>
 
                       <div>
-                        <div className="text-base font-bold text-on-surface flex items-center gap-1.5">
+                        <div className="text-sm sm:text-base font-bold text-on-surface flex items-center gap-1.5">
                           <span className="material-symbols-outlined text-secondary text-[18px]">public</span>
                           {!isUnspecified ? app.target_country : "Destination Pending"}
                         </div>
@@ -340,7 +340,7 @@ export default function ApplicationsManagementPage() {
                     </div>
 
                     {/* Card Body */}
-                    <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+                    <div className="p-4 sm:p-5 space-y-3.5 sm:space-y-4 flex-1 flex flex-col justify-between">
                       {/* Applicant & Details */}
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between text-xs">
@@ -396,7 +396,7 @@ export default function ApplicationsManagementPage() {
                     </div>
 
                     {/* Card Footer CTAs */}
-                    <div className="p-4 bg-surface border-t border-outline-variant flex items-center gap-2">
+                    <div className="p-3 sm:p-4 bg-surface border-t border-outline-variant flex items-center gap-2">
                       <Link
                         href={`/chat?case_id=${app.case_id}`}
                         className="flex-1 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold text-center hover:bg-opacity-90 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
@@ -422,25 +422,25 @@ export default function ApplicationsManagementPage() {
 
       {/* Edit Application Modal */}
       {editingApp && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full shadow-2xl border border-outline-variant overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full shadow-2xl border border-outline-variant overflow-hidden flex flex-col max-h-[88vh]">
             {/* Modal Header */}
-            <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface">
+            <div className="p-4 sm:p-5 border-b border-outline-variant flex justify-between items-center bg-surface">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">edit_document</span>
-                <h3 className="text-base font-bold text-on-surface">Edit Application #{editingApp.case_id}</h3>
+                <h3 className="text-sm sm:text-base font-bold text-on-surface">Edit Application #{editingApp.case_id}</h3>
               </div>
               <button 
                 onClick={() => setEditingApp(null)}
-                className="p-1 rounded-full text-on-surface-variant hover:bg-surface-container transition-colors"
+                className="p-1 rounded-full text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-4 overflow-y-auto flex-1">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-on-surface-variant uppercase mb-1">Target Country</label>
                   <input 
@@ -484,14 +484,14 @@ export default function ApplicationsManagementPage() {
                   <button
                     type="button"
                     onClick={addCustomField}
-                    className="text-xs text-primary font-bold hover:underline flex items-center gap-1"
+                    className="text-xs text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[14px]">add</span>
                     Add Field
                   </button>
                 </div>
 
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                   {editFields.length === 0 ? (
                     <p className="text-xs text-on-surface-variant italic">No data fields added yet.</p>
                   ) : (
@@ -502,7 +502,7 @@ export default function ApplicationsManagementPage() {
                           value={field.key}
                           onChange={(e) => updateFieldKey(idx, e.target.value)}
                           placeholder="Field Name"
-                          className="w-1/3 px-2.5 py-1.5 bg-surface border border-outline-variant rounded-lg text-xs font-medium focus:border-primary outline-none"
+                          className="w-2/5 sm:w-1/3 px-2.5 py-1.5 bg-surface border border-outline-variant rounded-lg text-xs font-medium focus:border-primary outline-none"
                         />
                         <input 
                           type="text"
@@ -514,7 +514,7 @@ export default function ApplicationsManagementPage() {
                         <button
                           type="button"
                           onClick={() => removeCustomField(idx)}
-                          className="p-1 text-on-surface-variant hover:text-error transition-colors"
+                          className="p-1 text-on-surface-variant hover:text-error transition-colors flex-shrink-0 cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[16px]">close</span>
                         </button>
@@ -526,11 +526,11 @@ export default function ApplicationsManagementPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-surface border-t border-outline-variant flex justify-end gap-3">
+            <div className="p-3 sm:p-4 bg-surface border-t border-outline-variant flex justify-end gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setEditingApp(null)}
-                className="px-4 py-2 bg-surface border border-outline-variant text-on-surface rounded-xl text-xs font-bold hover:bg-surface-container transition-colors"
+                className="px-4 py-2 bg-surface border border-outline-variant text-on-surface rounded-xl text-xs font-bold hover:bg-surface-container transition-colors cursor-pointer"
               >
                 Cancel
               </button>

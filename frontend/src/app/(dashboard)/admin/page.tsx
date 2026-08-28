@@ -107,19 +107,19 @@ export default function AdminDashboard() {
   return (
     <div className="flex-1 flex flex-col h-full relative w-full pb-16 md:pb-0 bg-background">
       {/* Top Header Bar */}
-      <header className="bg-surface border-b border-outline-variant shadow-sm w-full z-30 flex justify-between items-center px-6 py-4 flex-shrink-0 sticky top-0">
+      <header className="bg-surface border-b border-outline-variant shadow-sm w-full z-30 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 sm:px-6 py-3.5 gap-3 flex-shrink-0 sticky top-0">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-primary-container text-on-primary-container">
-            <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
+          <div className="p-2 sm:p-2.5 rounded-xl bg-primary-container text-on-primary-container">
+            <span className="material-symbols-outlined text-lg sm:text-xl">admin_panel_settings</span>
           </div>
           <div>
-            <h1 className="text-base font-bold text-on-surface leading-tight">Case Management Dashboard</h1>
-            <p className="text-xs text-on-surface-variant mt-0.5">Audit applicant intake states and track real-time verification progress</p>
+            <h1 className="text-sm sm:text-base font-bold text-on-surface leading-tight">Case Management Dashboard</h1>
+            <p className="text-[11px] sm:text-xs text-on-surface-variant mt-0.5">Audit applicant intake states and track real-time verification progress</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative hidden sm:block w-64">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="relative flex-1 sm:flex-none w-full sm:w-64">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
             <input 
               className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:border-primary text-xs outline-none" 
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
           </div>
           <button 
             onClick={fetchDashboardData} 
-            className="p-2 text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors border border-outline-variant" 
+            className="p-2 text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors border border-outline-variant flex-shrink-0 cursor-pointer" 
             title="Refresh data"
           >
             <span className="material-symbols-outlined text-[18px]">refresh</span>
@@ -140,20 +140,20 @@ export default function AdminDashboard() {
       </header>
 
       {/* Main Canvas */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
-        <div className="max-w-6xl mx-auto space-y-6">
+      <main className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8">
+        <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
           
           {/* Stats Cards Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-6">
             {/* Stat 1 */}
-            <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient border border-outline-variant flex flex-col justify-between space-y-4">
+            <div className="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-ambient border border-outline-variant flex flex-col justify-between space-y-3 sm:space-y-4">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Total Active Cases</p>
-                  <h3 className="text-3xl font-bold text-primary">{stats.active_cases.toLocaleString()}</h3>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-primary">{stats.active_cases.toLocaleString()}</h3>
                 </div>
-                <div className="p-3 bg-primary-fixed rounded-xl text-primary">
-                  <span className="material-symbols-outlined text-2xl">folder_open</span>
+                <div className="p-2.5 sm:p-3 bg-primary-fixed rounded-xl text-primary">
+                  <span className="material-symbols-outlined text-xl sm:text-2xl">folder_open</span>
                 </div>
               </div>
               <div className="flex items-center text-xs font-semibold text-secondary gap-1.5 pt-2 border-t border-outline-variant/40">
@@ -163,14 +163,14 @@ export default function AdminDashboard() {
             </div>
 
             {/* Stat 2 */}
-            <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient border border-outline-variant flex flex-col justify-between space-y-4">
+            <div className="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-ambient border border-outline-variant flex flex-col justify-between space-y-3 sm:space-y-4">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Pending Audits</p>
-                  <h3 className="text-3xl font-bold text-on-surface">{stats.pending_audits.toLocaleString()}</h3>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-on-surface">{stats.pending_audits.toLocaleString()}</h3>
                 </div>
-                <div className="p-3 bg-tertiary-fixed rounded-xl text-tertiary-container">
-                  <span className="material-symbols-outlined text-2xl">fact_check</span>
+                <div className="p-2.5 sm:p-3 bg-tertiary-fixed rounded-xl text-tertiary-container">
+                  <span className="material-symbols-outlined text-xl sm:text-2xl">fact_check</span>
                 </div>
               </div>
               <div className="flex items-center text-xs font-medium text-on-surface-variant gap-1.5 pt-2 border-t border-outline-variant/40">
@@ -180,14 +180,14 @@ export default function AdminDashboard() {
             </div>
 
             {/* Stat 3 */}
-            <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient border border-outline-variant flex flex-col justify-between space-y-4">
+            <div className="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-ambient border border-outline-variant flex flex-col justify-between space-y-3 sm:space-y-4 sm:col-span-2 md:col-span-1">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Documents Processed</p>
-                  <h3 className="text-3xl font-bold text-secondary">{stats.processed_today.toLocaleString()}</h3>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-secondary">{stats.processed_today.toLocaleString()}</h3>
                 </div>
-                <div className="p-3 bg-secondary-fixed rounded-xl text-secondary">
-                  <span className="material-symbols-outlined text-2xl">description</span>
+                <div className="p-2.5 sm:p-3 bg-secondary-fixed rounded-xl text-secondary">
+                  <span className="material-symbols-outlined text-xl sm:text-2xl">description</span>
                 </div>
               </div>
               <div className="flex items-center text-xs font-semibold text-secondary gap-1.5 pt-2 border-t border-outline-variant/40">
@@ -197,21 +197,21 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Table Container */}
+          {/* Table / Cards Container */}
           <div className="bg-surface-container-lowest rounded-2xl shadow-ambient border border-outline-variant overflow-hidden flex flex-col">
             {/* Card Header & Filters */}
-            <div className="p-5 border-b border-outline-variant bg-surface flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-3">
-                <h2 className="text-base font-bold text-on-surface">Applicant Cases</h2>
-                <span className="px-2.5 py-0.5 bg-surface-container text-primary font-bold text-xs rounded-full border border-outline-variant">
+            <div className="p-4 sm:p-5 border-b border-outline-variant bg-surface flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <h2 className="text-sm sm:text-base font-bold text-on-surface">Applicant Cases</h2>
+                <span className="px-2.5 py-0.5 bg-surface-container text-primary font-bold text-[11px] sm:text-xs rounded-full border border-outline-variant">
                   {filteredCases.length} Total
                 </span>
               </div>
               
               {/* Filter Controls */}
-              <div className="flex flex-wrap sm:flex-nowrap gap-2.5 w-full sm:w-auto">
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
                 <select 
-                  className="rounded-xl border border-outline-variant bg-surface text-xs font-semibold focus:border-primary p-2 outline-none cursor-pointer"
+                  className="flex-1 sm:flex-none rounded-xl border border-outline-variant bg-surface text-xs font-semibold focus:border-primary p-2 outline-none cursor-pointer"
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
                 >
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
                 </select>
 
                 <select 
-                  className="rounded-xl border border-outline-variant bg-surface text-xs font-semibold focus:border-primary p-2 outline-none cursor-pointer"
+                  className="flex-1 sm:flex-none rounded-xl border border-outline-variant bg-surface text-xs font-semibold focus:border-primary p-2 outline-none cursor-pointer"
                   value={selectedVisa}
                   onChange={(e) => setSelectedVisa(e.target.value)}
                 >
@@ -235,7 +235,7 @@ export default function AdminDashboard() {
                 {(selectedCountry || selectedVisa || searchQuery) && (
                   <button 
                     onClick={() => { setSelectedCountry(''); setSelectedVisa(''); setSearchQuery(''); }}
-                    className="bg-surface border border-outline-variant px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-1 font-semibold"
+                    className="bg-surface border border-outline-variant px-2.5 py-2 rounded-xl text-xs text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-1 font-semibold cursor-pointer"
                     title="Clear filters"
                   >
                     <span className="material-symbols-outlined text-[14px]">close</span>
@@ -245,8 +245,63 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto">
+            {/* Mobile View: Responsive Case Cards (md:hidden) */}
+            <div className="md:hidden divide-y divide-outline-variant/60">
+              {filteredCases.map((c, i) => (
+                <div key={c.case_id || i} className="p-4 space-y-3 bg-surface-container-lowest">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-xs font-bold text-primary">#{c.case_id}</div>
+                      <div className="text-sm font-bold text-on-surface mt-0.5">{c.name || 'Unknown Applicant'}</div>
+                      <div className="text-[11px] text-on-surface-variant">{c.email || 'Not provided'}</div>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface border border-outline-variant uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-secondary mr-1.5"></span>
+                      {c.status || 'In Progress'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-outline-variant/40">
+                    <div>
+                      <span className="text-on-surface font-semibold">{c.country || c.target_country || 'Unspecified'}</span>
+                      <span className="text-on-surface-variant text-[11px] block">{c.visa || c.visa_type || 'General Intake'}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-on-surface-variant uppercase font-bold block">Completeness</span>
+                      <span className="text-xs text-primary font-bold">{c.confidence || 0}%</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/40">
+                    <button
+                      onClick={() => handleDeleteCase(c.case_id, c.name)}
+                      disabled={isDeleting === c.case_id}
+                      className="p-1.5 text-error hover:bg-error-container rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                      title="Delete application"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                    <Link 
+                      className="flex-1 py-1.5 px-3 bg-primary text-on-primary font-bold rounded-lg hover:bg-opacity-90 transition-all text-xs inline-flex items-center justify-center gap-1 shadow-xs"
+                      href={`/review?case_id=${c.case_id}`}
+                    >
+                      <span className="material-symbols-outlined text-[15px]">visibility</span>
+                      View Application
+                    </Link>
+                  </div>
+                </div>
+              ))}
+              {filteredCases.length === 0 && (
+                <div className="p-8 text-center text-xs text-on-surface-variant space-y-2">
+                  <span className="material-symbols-outlined text-3xl text-outline">search_off</span>
+                  <p className="font-semibold text-sm text-on-surface">No applications match your selected filters.</p>
+                  <p className="text-xs text-on-surface-variant">Try resetting search terms or filter criteria.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop View: Full Data Table (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-outline-variant">
                 <thead className="bg-surface-container-low">
                   <tr>
@@ -296,7 +351,7 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => handleDeleteCase(c.case_id, c.name)}
                             disabled={isDeleting === c.case_id}
-                            className="p-1.5 text-error hover:bg-error-container rounded-lg transition-colors disabled:opacity-50"
+                            className="p-1.5 text-error hover:bg-error-container rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                             title="Delete application"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -321,8 +376,8 @@ export default function AdminDashboard() {
             </div>
 
             {/* Pagination & Summary Footer */}
-            <div className="p-4 border-t border-outline-variant flex items-center justify-between bg-surface">
-              <span className="text-xs font-medium text-on-surface-variant">
+            <div className="p-3 sm:p-4 border-t border-outline-variant flex items-center justify-between bg-surface">
+              <span className="text-[11px] sm:text-xs font-medium text-on-surface-variant">
                 Showing {filteredCases.length} of {cases.length} entries
               </span>
               <div className="flex items-center gap-1">

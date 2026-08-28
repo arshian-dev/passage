@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
+import MobileNav from './components/MobileNav';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -7,8 +8,34 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const isAdmin = role === 'admin';
 
   return (
-    <div className="flex-1 flex overflow-hidden w-full h-full relative min-h-screen bg-background">
-      {/* Desktop SideNavBar */}
+    <div className="flex-1 flex flex-col md:flex-row w-full min-h-screen bg-background relative">
+      {/* Mobile Top Header (Visible only on mobile < md) */}
+      <header className="md:hidden sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant px-4 py-2.5 flex items-center justify-between shadow-xs">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-xs">
+            <span className="material-symbols-outlined text-lg font-bold">flight_takeoff</span>
+          </div>
+          <div>
+            <span className="text-sm font-bold text-primary leading-none block">Passage</span>
+            <span className="text-[9px] font-semibold text-secondary uppercase tracking-wider">AI Platform</span>
+          </div>
+        </Link>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 px-2 py-0.5 bg-secondary-container rounded-full text-[10px] font-bold text-secondary">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+            <span>Live DB</span>
+          </div>
+          <Link
+            href="/"
+            className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
+            title="Return to Home"
+          >
+            <span className="material-symbols-outlined text-[18px]">home</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* Desktop SideNavBar (Hidden on Mobile) */}
       <nav className="hidden md:flex flex-col h-[100dvh] w-64 fixed left-0 top-0 z-40 p-5 bg-surface-container-lowest border-r border-outline-variant shadow-sm justify-between">
         {/* Top Header */}
         <div className="space-y-6">
@@ -97,33 +124,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex flex-col min-w-0 w-full md:pl-64 min-h-screen">
+      <div className="flex-1 flex flex-col min-w-0 w-full md:pl-64 min-h-[calc(100vh-50px)] md:min-h-screen">
         {children}
       </div>
 
-      {/* Mobile BottomNav (Hidden on MD) */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-outline-variant flex justify-around p-2 z-50 shadow-lg">
-        <Link href="/applications" className="flex flex-col items-center p-1.5 text-on-surface-variant hover:text-primary">
-          <span className="material-symbols-outlined text-xl">folder_shared</span>
-          <span className="text-[10px] font-medium mt-0.5">Apps</span>
-        </Link>
-        <Link href="/chat" className="flex flex-col items-center p-1.5 text-primary font-bold">
-          <span className="material-symbols-outlined text-xl">forum</span>
-          <span className="text-[10px] mt-0.5">Chat</span>
-        </Link>
-        <Link href="/review" className="flex flex-col items-center p-1.5 text-on-surface-variant hover:text-primary">
-          <span className="material-symbols-outlined text-xl">assignment_ind</span>
-          <span className="text-[10px] font-medium mt-0.5">Review</span>
-        </Link>
-        <Link href="/admin" className="flex flex-col items-center p-1.5 text-on-surface-variant hover:text-primary">
-          <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
-          <span className="text-[10px] font-medium mt-0.5">Admin</span>
-        </Link>
-        <Link href="/admin/knowledge-base" className="flex flex-col items-center p-1.5 text-on-surface-variant hover:text-primary">
-          <span className="material-symbols-outlined text-xl">dynamic_form</span>
-          <span className="text-[10px] font-medium mt-0.5">Forms</span>
-        </Link>
-      </nav>
+      {/* Dynamic Mobile BottomNav */}
+      <MobileNav />
     </div>
   );
 }
