@@ -17,10 +17,10 @@ WORKDIR /app
 COPY backend/requirements.txt /app/backend/
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# 2. Install Frontend Node dependencies
+# 2. Install Frontend Node dependencies (including platform-specific native binaries like lightningcss)
 COPY frontend/package*.json /app/frontend/
 WORKDIR /app/frontend
-RUN npm install --omit=optional
+RUN npm install
 
 # 3. Copy full application source code
 WORKDIR /app
@@ -31,6 +31,7 @@ RUN chmod +x /app/start.sh
 
 # 4. Build Next.js production frontend
 WORKDIR /app/frontend
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 WORKDIR /app
