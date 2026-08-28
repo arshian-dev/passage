@@ -18,8 +18,14 @@ export default function LandingPage() {
       <header className="bg-surface/90 backdrop-blur-md border-b border-outline-variant shadow-sm w-full top-0 z-50 sticky">
         <div className="flex justify-between items-center w-full px-4 sm:px-8 py-3 max-w-7xl mx-auto">
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-2">
-            <img alt="Passage Logo" className="h-9 sm:h-11 md:h-12 w-auto rounded-md object-contain mix-blend-multiply" src="/assets/logo.png" />
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-xl sm:text-2xl font-bold">flight_takeoff</span>
+            </div>
+            <div>
+              <span className="text-base sm:text-lg font-bold text-primary leading-tight block">Passage</span>
+              <span className="text-[9px] sm:text-[10px] font-semibold text-secondary uppercase tracking-wider block">AI Immigration Platform</span>
+            </div>
           </Link>
 
           {/* Desktop Nav Links */}
@@ -431,10 +437,15 @@ export default function LandingPage() {
       <footer className="bg-surface border-t border-outline-variant/30 py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-center md:text-left">
-            <div className="flex items-center gap-2">
-              <img alt="Passage Logo" className="h-7 sm:h-8 w-auto rounded object-contain mix-blend-multiply" src="/assets/logo.png" />
-              <span className="text-sm font-bold text-primary">Passage AI</span>
-            </div>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-xs group-hover:scale-105 transition-transform">
+                <span className="material-symbols-outlined text-lg font-bold">flight_takeoff</span>
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-bold text-primary block leading-tight">Passage</span>
+                <span className="text-[9px] font-semibold text-secondary uppercase tracking-wider block">AI Platform</span>
+              </div>
+            </Link>
             <div className="text-[11px] sm:text-xs text-on-surface-variant">
               © 2026 Passage Immigration AI Platform. All rights reserved.
             </div>
