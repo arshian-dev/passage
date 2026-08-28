@@ -1,22 +1,40 @@
 FROM python:3.11-slim
 
-# Install system dependencies including Tesseract OCR & development libraries
+# Install system packages, Tesseract OCR, and Node.js 20
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     tesseract-ocr-eng \
     libpq-dev \
     gcc \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy dependencies from backend and install
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 1. Install Backend Python dependencies
+COPY backend/requirements.txt /app/backend/
+RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# Copy backend application source code
-COPY backend/ .
+# 2. Install Frontend Node dependencies
+COPY frontend/package*.json /app/frontend/
+WORKDIR /app/frontend
+RUN npm install --omit=optional
 
-EXPOSE 8000
+# 3. Copy full application source code
+WORKDIR /app
+COPY backend/ /app/backend/
+COPY frontend/ /app/frontend/
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# 4. Build Next.js production frontend
+WORKDIR /app/frontend
+RUN npm run build
+
+WORKDIR /app
+
+EXPOSE 3000 8000
+
+CMD ["/app/start.sh"]

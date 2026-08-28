@@ -1,7 +1,7 @@
 services:
-  # 1. Python FastAPI Backend with Tesseract OCR & Neon PostgreSQL
+  # Unified Single-Instance Service (FastAPI + Next.js UI + Tesseract OCR)
   - type: web
-    name: passage-backend
+    name: passage
     runtime: docker
     dockerContext: .
     dockerfilePath: Dockerfile
@@ -15,17 +15,4 @@ services:
       - key: PINECONE_API_KEY
         sync: false
       - key: PINECONE_INDEX
-        sync: false
-
-  # 2. Next.js Frontend Web Application
-  - type: web
-    name: passage-frontend
-    runtime: node
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
-    plan: free
-    region: oregon
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
         sync: false
