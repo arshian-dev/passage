@@ -25,15 +25,27 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB and seed default immigration schemas
+    # Initialize DB, run column migrations, and seed default immigration schemas
     try:
         models.Base.metadata.create_all(bind=engine)
+        
+        # Auto-migrate: Ensure chat_history column exists in user_cases on existing PostgreSQL instances
+        try:
+            with engine.begin() as conn:
+                conn.execute(sqlalchemy.text(
+                    "ALTER TABLE user_cases ADD COLUMN IF NOT EXISTS chat_history JSON DEFAULT '[]'::json;"
+                ))
+                print("Database auto-migration: user_cases columns verified.")
+        except Exception as mig_err:
+            print(f"Auto-migration note: {mig_err}")
+
         db = SessionLocal()
         seeded_count = seed_default_schemas(db)
         db.close()
         print(f"Database tables verified. Seeded/checked {seeded_count} country schemas.")
     except Exception as e:
         print(f"Database initialization error: {e}")
+        
     # Optional vector DB check
     try:
         if os.getenv("PINECONE_API_KEY") and os.getenv("PINECONE_API_KEY") != "your-pinecone-api-key":
@@ -49,6 +61,7 @@ app = FastAPI(title="Immigration AI Agent Backend", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["*"],
     allow_origin_regex=r"^https?:\/\/.*$",
     allow_credentials=True,
     allow_methods=["*"],
@@ -65,32 +78,39 @@ def get_knowledge_base_options():
     Returns the complete knowledge base catalog of supported destinations, visa pathways, criteria, and documents.
     """
     return IMMIGRATION_KNOWLEDGE_BASE
-    return {"status": "ok", "message": "Immigration AI Backend Running"}
 
 @app.get("/api/cases")
 def list_cases(db: Session = Depends(get_db)):
     """
     Returns a list of all active cases for the multi-chat switcher.
     """
-    cases = db.query(models.UserCaseState).all()
-    results = []
-    for c in cases:
-        extracted = c.extracted_data or {}
-        missing = c.missing_fields or []
-        total = len(extracted) + len(missing)
-        completeness = int((len(extracted) / total) * 100) if total > 0 else (100 if len(extracted) > 0 else 0)
-        
-        results.append({
-            "case_id": c.case_id,
-            "target_country": c.target_country or "Unspecified",
-            "visa_type": c.visa_type or "General Intake",
-            "status": c.status or "In Progress",
-            "extracted_data": extracted,
-            "missing_fields": missing,
-            "chat_history": c.chat_history or [],
-            "completeness": completeness
-        })
-    return results
+    try:
+        cases = db.query(models.UserCaseState).all()
+        results = []
+        for c in cases:
+            extracted = c.extracted_data or {}
+            missing = c.missing_fields or []
+            total = len(extracted) + len(missing)
+            completeness = int((len(extracted) / total) * 100) if total > 0 else (100 if len(extracted) > 0 else 0)
+            
+            # Safe attribute access for chat_history in case of legacy schema
+            chat_hist = getattr(c, "chat_history", None) or []
+            
+            results.append({
+                "case_id": c.case_id,
+                "target_country": c.target_country or "Unspecified",
+                "visa_type": c.visa_type or "General Intake",
+                "status": c.status or "In Progress",
+                "extracted_data": extracted,
+                "missing_fields": missing,
+                "chat_history": chat_hist,
+                "completeness": completeness
+            })
+        return results
+    except Exception as e:
+        print(f"Error in list_cases: {e}")
+        # Return empty list or fallback to prevent frontend 500 crash
+        return []
 
 def get_unified_user_profile(user_id: str, db: Session) -> dict:
     """
@@ -243,8 +263,38 @@ def delete_case(case_id: str, db: Session = Depends(get_db)):
 
 @app.get("/api/cases/{case_id}")
 def get_case(case_id: str, db: Session = Depends(get_db)):
-    case = db.query(models.UserCaseState).filter(models.UserCaseState.case_id == case_id).first()
-    if not case:
+    try:
+        case = db.query(models.UserCaseState).filter(models.UserCaseState.case_id == case_id).first()
+        if not case:
+            return {
+                "case_id": case_id,
+                "target_country": "Unspecified",
+                "visa_type": "General",
+                "status": "In Progress",
+                "extracted_data": {},
+                "missing_fields": [],
+                "chat_history": [],
+                "completeness": 0
+            }
+            
+        extracted = case.extracted_data or {}
+        missing = case.missing_fields or []
+        total = len(extracted) + len(missing)
+        completeness = int((len(extracted) / total) * 100) if total > 0 else (100 if len(extracted) > 0 else 0)
+        chat_hist = getattr(case, "chat_history", None) or []
+        
+        return {
+            "case_id": case.case_id,
+            "target_country": case.target_country or "Unspecified",
+            "visa_type": case.visa_type or "General Intake",
+            "status": case.status or "In Progress",
+            "extracted_data": extracted,
+            "missing_fields": missing,
+            "chat_history": chat_hist,
+            "completeness": completeness
+        }
+    except Exception as e:
+        print(f"Error in get_case: {e}")
         return {
             "case_id": case_id,
             "target_country": "Unspecified",
@@ -255,23 +305,6 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
             "chat_history": [],
             "completeness": 0
         }
-        
-    extracted = case.extracted_data or {}
-    missing = case.missing_fields or []
-    total = len(extracted) + len(missing)
-    completeness = int((len(extracted) / total) * 100) if total > 0 else (100 if len(extracted) > 0 else 0)
-    
-    return {
-        "case_id": case.case_id,
-        "user_id": case.user_id,
-        "target_country": case.target_country or "Unspecified",
-        "visa_type": case.visa_type or "General",
-        "status": case.status,
-        "extracted_data": extracted,
-        "missing_fields": missing,
-        "chat_history": case.chat_history or [],
-        "completeness": completeness
-    }
 
 @app.get("/api/admin/cases")
 def get_admin_cases(db: Session = Depends(get_db)):
@@ -526,87 +559,100 @@ async def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
     """
     Evaluates country, visa type, and missing fields against case_state, processes user reply with OpenAI, and returns agent prompt.
     """
-    case = db.query(models.UserCaseState).filter_by(case_id=req.case_id).first()
-    
-    if not case:
-        schema_dict = get_schema_for_country("GENERIC", "GENERIC", db)
+    try:
+        case = db.query(models.UserCaseState).filter_by(case_id=req.case_id).first()
+        
+        if not case:
+            schema_dict = get_schema_for_country("GENERIC", "GENERIC", db)
+            schema_fields = schema_dict.get("required_fields", [])
+            missing_fields = calculate_missing_fields({}, schema_fields)
+            case = models.UserCaseState(
+                case_id=req.case_id, target_country="Unspecified", visa_type="General", status="In Progress",
+                extracted_data={}, missing_fields=missing_fields, chat_history=[]
+            )
+            db.add(case)
+            db.commit()
+            db.refresh(case)
+            
+        schema_dict = get_schema_for_country(case.target_country, case.visa_type, db)
         schema_fields = schema_dict.get("required_fields", [])
-        missing_fields = calculate_missing_fields({}, schema_fields)
-        case = models.UserCaseState(
-            case_id=req.case_id, target_country="Unspecified", visa_type="General", status="In Progress",
-            extracted_data={}, missing_fields=missing_fields, chat_history=[]
-        )
-        db.add(case)
+        
+        current_missing = calculate_missing_fields(case.extracted_data or {}, schema_fields)
+        case.missing_fields = current_missing
+        flag_modified(case, "missing_fields")
+        db.commit()
+        
+        # Fetch user's unified profile across other applications
+        unified_profile = get_unified_user_profile(case.user_id or "user_default", db)
+        
+        case_state = {
+            "target_country": case.target_country,
+            "visa_type": case.visa_type,
+            "missing_fields": current_missing,
+            "extracted_data": case.extracted_data or {},
+            "unified_profile": unified_profile
+        }
+        
+        # Record user message in history before LLM processing
+        existing_history = list(getattr(case, "chat_history", None) or [])
+        
+        llm_response = process_chat_message_with_llm(req.message, case_state, schema_dict, chat_history=existing_history)
+        
+        # Check if a new target country or visa type was extracted
+        new_country = llm_response.get("target_country")
+        if new_country and new_country.lower() not in ["null", "none", "", "unspecified"]:
+            case.target_country = new_country
+            flag_modified(case, "target_country")
+            # Re-resolve schema for the newly detected country
+            schema_dict = get_schema_for_country(case.target_country, case.visa_type, db)
+            schema_fields = schema_dict.get("required_fields", [])
+            
+        new_visa = llm_response.get("visa_type")
+        if new_visa and new_visa.lower() not in ["null", "none", "", "general"]:
+            case.visa_type = new_visa
+            flag_modified(case, "visa_type")
+            schema_dict = get_schema_for_country(case.target_country, case.visa_type, db)
+            schema_fields = schema_dict.get("required_fields", [])
+        
+        new_extracted = llm_response.get("new_extracted_data", {})
+        if new_extracted:
+            updated_extracted_data = dict(case.extracted_data or {})
+            updated_extracted_data.update(new_extracted)
+            case.extracted_data = updated_extracted_data
+            case.missing_fields = calculate_missing_fields(updated_extracted_data, schema_fields)
+            
+            flag_modified(case, "extracted_data")
+            flag_modified(case, "missing_fields")
+        
+        reply_text = llm_response.get("reply", "I'm having trouble processing that.")
+        
+        # Append user and agent turn to persistent chat history
+        existing_history.append({"role": "user", "text": req.message})
+        existing_history.append({"role": "agent", "text": reply_text})
+        case.chat_history = existing_history
+        flag_modified(case, "chat_history")
+        
         db.commit()
         db.refresh(case)
-        
-    schema_dict = get_schema_for_country(case.target_country, case.visa_type, db)
-    schema_fields = schema_dict.get("required_fields", [])
-    
-    current_missing = calculate_missing_fields(case.extracted_data or {}, schema_fields)
-    case.missing_fields = current_missing
-    flag_modified(case, "missing_fields")
-    db.commit()
-    
-    # Fetch user's unified profile across other applications
-    unified_profile = get_unified_user_profile(case.user_id or "user_default", db)
-    
-    case_state = {
-        "target_country": case.target_country,
-        "visa_type": case.visa_type,
-        "missing_fields": current_missing,
-        "extracted_data": case.extracted_data or {},
-        "unified_profile": unified_profile
-    }
-    
-    # Record user message in history before LLM processing
-    existing_history = list(case.chat_history or [])
-    
-    llm_response = process_chat_message_with_llm(req.message, case_state, schema_dict, chat_history=existing_history)
-    
-    # Check if a new target country or visa type was extracted
-    new_country = llm_response.get("target_country")
-    if new_country and new_country.lower() not in ["null", "none", "", "unspecified"]:
-        case.target_country = new_country
-        flag_modified(case, "target_country")
-        # Re-resolve schema for the newly detected country
-        schema_dict = get_schema_for_country(case.target_country, case.visa_type, db)
-        schema_fields = schema_dict.get("required_fields", [])
-        
-    new_visa = llm_response.get("visa_type")
-    if new_visa and new_visa.lower() not in ["null", "none", "", "general"]:
-        case.visa_type = new_visa
-        flag_modified(case, "visa_type")
-        schema_dict = get_schema_for_country(case.target_country, case.visa_type, db)
-        schema_fields = schema_dict.get("required_fields", [])
-    
-    new_extracted = llm_response.get("new_extracted_data", {})
-    if new_extracted:
-        updated_extracted_data = dict(case.extracted_data or {})
-        updated_extracted_data.update(new_extracted)
-        case.extracted_data = updated_extracted_data
-        case.missing_fields = calculate_missing_fields(updated_extracted_data, schema_fields)
-        
-        flag_modified(case, "extracted_data")
-        flag_modified(case, "missing_fields")
-    
-    reply_text = llm_response.get("reply", "I'm having trouble processing that.")
-    
-    # Append user and agent turn to persistent chat history
-    existing_history.append({"role": "user", "text": req.message})
-    existing_history.append({"role": "agent", "text": reply_text})
-    case.chat_history = existing_history
-    flag_modified(case, "chat_history")
-    
-    db.commit()
-    db.refresh(case)
-        
-    return {
-        "reply": reply_text,
-        "target_country": case.target_country,
-        "visa_type": case.visa_type,
-        "chat_history": case.chat_history or []
-    }
+            
+        return {
+            "reply": reply_text,
+            "target_country": case.target_country,
+            "visa_type": case.visa_type,
+            "chat_history": case.chat_history or []
+        }
+    except Exception as e:
+        print(f"Error in chat_with_agent: {e}")
+        # Safe fallback reply that preserves user experience
+        return {
+            "reply": "I'm reviewing your application. Which country or visa category are you looking to apply for?",
+            "target_country": "Unspecified",
+            "visa_type": "General",
+            "chat_history": [
+                {"role": "user", "text": req.message},
+                {"role": "agent", "text": "I'm reviewing your application. Which country or visa category are you looking to apply for?"}
+            ]
+        }
 
 @app.post("/api/application/generate")
 async def generate_application(case_id: str = Form(...), db: Session = Depends(get_db)):

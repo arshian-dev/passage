@@ -39,7 +39,10 @@ export default function ChatIntake() {
     const urlCaseId = searchParams.get('case_id');
 
     fetch(`${API_BASE_URL}/api/cases`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
           setCases(data);
@@ -61,7 +64,10 @@ export default function ChatIntake() {
   useEffect(() => {
     if (!selectedCaseId) return;
     fetch(`${API_BASE_URL}/api/cases/${selectedCaseId}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         setCaseState(data);
         if (Array.isArray(data.chat_history) && data.chat_history.length > 0) {
@@ -81,7 +87,7 @@ export default function ChatIntake() {
           }
         }
       })
-      .catch(err => console.error(err));
+      .catch(err => console.error("Failed to load case details:", err));
   }, [selectedCaseId]);
 
   const handleNewCase = async () => {
@@ -91,6 +97,7 @@ export default function ChatIntake() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_country: "Unspecified", visa_type: "General" })
       });
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const newCase = await res.json();
       setCases(prev => [newCase, ...prev]);
       setSelectedCaseId(newCase.case_id);
@@ -113,24 +120,29 @@ export default function ChatIntake() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ case_id: selectedCaseId, message: userText })
       });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       const data = await res.json();
       if (Array.isArray(data.chat_history) && data.chat_history.length > 0) {
         setMessages(data.chat_history);
-      } else {
+      } else if (data.reply) {
         setMessages(prev => [...prev, { role: 'agent', text: data.reply }]);
       }
       
       // Refresh case state & cases list so country/sidebar updates live
       fetch(`${API_BASE_URL}/api/cases/${selectedCaseId}`)
-        .then(r => r.json())
+        .then(r => r.ok ? r.json() : null)
         .then(d => {
-          setCaseState(d);
-          setCases(prev => prev.map(c => c.case_id === selectedCaseId ? { ...c, ...d } : c));
+          if (d) {
+            setCaseState(d);
+            setCases(prev => prev.map(c => c.case_id === selectedCaseId ? { ...c, ...d } : c));
+          }
         })
         .catch(console.error);
     } catch (err) {
-      console.error(err);
-      setMessages(prev => [...prev, { role: 'agent', text: "Sorry, I encountered an error connecting to the server." }]);
+      console.error("Chat error:", err);
+      setMessages(prev => [...prev, { role: 'agent', text: "Sorry, I encountered an error connecting to the server. Please verify your connection or try again." }]);
     }
   };
 
