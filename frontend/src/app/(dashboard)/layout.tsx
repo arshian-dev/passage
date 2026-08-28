@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import MobileNav from './components/MobileNav';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -25,6 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
             <span>Live DB</span>
           </div>
+          <ThemeToggle className="!p-1.5 !rounded-lg" />
           <Link
             href="/"
             className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
@@ -113,13 +115,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <span className="text-[10px] font-semibold text-secondary px-1.5 py-0.5 bg-secondary-container rounded">Ready</span>
           </div>
 
-          <Link 
-            href="/" 
-            className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-            Back to Home
-          </Link>
+          <div className="flex items-center justify-between pt-1">
+            <Link 
+              href="/" 
+              className="flex items-center gap-1.5 py-2 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors"
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              Back to Home
+            </Link>
+            <ThemeToggle className="!p-1.5 !rounded-lg" />
+          </div>
         </div>
       </nav>
 

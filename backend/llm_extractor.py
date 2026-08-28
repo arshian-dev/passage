@@ -45,10 +45,13 @@ def extract_entities_with_llm(raw_text: str, schema: dict) -> dict:
         print(f"Extraction error: {e}")
         return mock_extraction()
 
-def process_chat_message_with_llm(message: str, case_state: dict, schema: dict) -> dict:
+from seed_data import IMMIGRATION_KNOWLEDGE_BASE
+
+def process_chat_message_with_llm(message: str, case_state: dict, schema: dict, chat_history: list = None) -> dict:
     """
-    Analyzes user message to extract target country, visa type, new form entities, and generate the next agent prompt.
-    Leverages the verified Unified Applicant Profile while enforcing strict anti-hallucination guardrails.
+    Analyzes user message with full conversation history context to extract target country, visa type,
+    new form entities, and generate the next agent prompt.
+    Leverages the verified Unified Applicant Profile while enforcing strict anti-hallucination and anti-redundancy guardrails.
     """
     if not client:
         return mock_chat_response(message)
@@ -62,56 +65,107 @@ def process_chat_message_with_llm(message: str, case_state: dict, schema: dict) 
         schema_fields = schema.get("required_fields", [])
         fields_description = json.dumps(schema_fields)
         
-        has_country = target_country and target_country not in ["GENERIC", "Unspecified", ""]
+        has_country = bool(target_country and target_country not in ["GENERIC", "Unspecified", "null", "None", ""])
+        has_visa = bool(visa_type and visa_type not in ["GENERIC", "General", "null", "None", ""])
         
+        country_status_directive = ""
+        if has_country and has_visa:
+            country_status_directive = (
+                f"- ALREADY CONFIRMED: Target Country is '{target_country}' and Visa Pathway is '{visa_type}'.\n"
+                f"- CRITICAL: DO NOT ASK the applicant which country or visa they want to apply for. It is already locked in.\n"
+                f"- If the applicant asks questions about their pathway, requirements, or documents, answer accurately from the knowledge base.\n"
+                f"- Otherwise, guide the applicant directly to complete the remaining missing required fields."
+            )
+        elif has_country:
+            country_status_directive = (
+                f"- ALREADY CONFIRMED: Target Country is '{target_country}'.\n"
+                f"- CRITICAL: DO NOT ASK for the country name again.\n"
+                f"- If the applicant asks what visa options or pathways exist for {target_country}, present the top visa options from the Knowledge Base with concise bullet points.\n"
+                f"- If the visa pathway/category is not yet specified, you may ask which visa type they prefer or proceed with general requirements for {target_country}."
+            )
+        else:
+            country_status_directive = (
+                "- Target Country is NOT yet confirmed.\n"
+                "- If the applicant asks what countries or visa options are available, or what suits their background, provide a helpful summary of top destinations (e.g. Canada, Germany, United States, UK, Australia, UAE) and their popular pathways.\n"
+                "- If they mention any country or visa in their message, extract it immediately into 'target_country' and 'visa_type' and acknowledge it enthusiastically.\n"
+                "- If no country has been mentioned yet and they are just saying hello, politely ask which destination country they are considering or offer top options."
+            )
+
+        kb_summary = json.dumps(IMMIGRATION_KNOWLEDGE_BASE, indent=2)
+
         system_prompt = (
-            "You are an intelligent, professional immigration intake AI assistant.\n\n"
-            "APPLICATION CONTEXT:\n"
+            "You are an alert, highly informed, empathetic, and professional immigration intake AI assistant.\n\n"
+            "IMMIGRATION KNOWLEDGE BASE (OFFICIAL DESTINATIONS & PATHWAYS):\n"
+            f"{kb_summary}\n\n"
+            "APPLICATION STATE & CONTEXT:\n"
             f"- Target Country: {target_country if has_country else 'Not yet specified'}\n"
-            f"- Visa Pathway/Type: {visa_type if visa_type and visa_type != 'GENERIC' else 'Not yet specified'}\n"
+            f"- Visa Pathway/Type: {visa_type if has_visa else 'Not yet specified'}\n"
             f"- Required Fields Schema: {fields_description}\n"
             f"- Currently Saved Data For This Application: {json.dumps(extracted_data)}\n"
             f"- Verified Unified Applicant Profile (Cross-Application Data): {json.dumps(unified_profile)}\n"
             f"- Still Missing Required Fields: {json.dumps(missing_fields)}\n\n"
-            "INTELLIGENCE & PRE-FILLING DIRECTIVES:\n"
-            "1. UNIFIED PROFILE UTILIZATION:\n"
+            "COUNTRY & VISA RETENTION DIRECTIVES:\n"
+            f"{country_status_directive}\n\n"
+            "INTELLIGENCE & ADVISORY DIRECTIVES:\n"
+            "1. ALERT & INFORMED ADVISORY:\n"
+            "   - When the user asks for options, advice, or comparisons (e.g. 'What countries do you support?', 'What options do I have for Germany?', 'What visa is good for a software engineer?', 'What are the requirements for Canada Express Entry?'), use the IMMIGRATION KNOWLEDGE BASE above to provide clear, actionable bullet points.\n"
+            "   - Highlight key eligibility points and required documents.\n"
+            "2. NO FORGETFULNESS & NO REPETITIVE QUESTIONS:\n"
+            "   - NEVER ask for information that the client has already told you or that is stored in 'Currently Saved Data' or 'Verified Unified Applicant Profile'.\n"
+            "   - If the user says their name, date of birth, passport, job, or destination anywhere in chat, remember and extract it permanently.\n"
+            "3. UNIFIED PROFILE UTILIZATION:\n"
             "   - Use verified data from the 'Unified Applicant Profile' to reduce manual input.\n"
-            "   - If the applicant starts a new application and their unified profile already contains verified fields (e.g., Name, Date of Birth, Passport Number, Email, etc.), acknowledge this politely so they don't have to re-enter them!\n"
-            "2. STRICT ANTI-HALLUCINATION GUARDRAILS:\n"
-            "   - NEVER fabricate, invent, assume, or guess any dates, test scores (e.g. IELTS), credentials, passport numbers, or job titles.\n"
-            "   - ONLY use facts that are explicitly written in 'Currently Saved Data', 'Verified Unified Applicant Profile', or the user's latest message.\n"
-            "   - If a required field is not explicitly present in the data, you MUST consider it missing and prompt the user for it directly.\n"
-            "3. COUNTRY & VISA INTAKE:\n"
-            "   - If Target Country is not yet specified, analyze if the user's message mentions a destination country or visa pathway. If detected, populate 'target_country' and/or 'visa_type'.\n"
-            "   - If unknown, ask which country they want to apply to.\n"
-            "4. FORM DATA EXTRACTION:\n"
+            "   - Acknowledge pre-filled fields so the applicant does not have to re-enter them.\n"
+            "4. STRICT ANTI-HALLUCINATION GUARDRAILS:\n"
+            "   - NEVER fabricate applicant personal details (dates, scores, passport numbers).\n"
+            "   - ONLY extract facts explicitly provided by the user.\n"
+            "5. FORM DATA EXTRACTION:\n"
             "   - Extract any personal/application details for fields in the schema.\n"
             "   - If user gives a full name (e.g. 'Ahmed Khan'), split into separate First Name / Last Name or Given Name / Family Name matching the schema field names.\n"
             "   - Keys in 'new_extracted_data' MUST match the exact 'name' string from the schema.\n"
-            "5. CONVERSATIONAL REPLY:\n"
-            "   - Acknowledge provided/pre-filled details, and focus directly on asking for the NEXT missing required field.\n"
-            "   - If all required fields are complete, confirm readiness for review.\n\n"
+            "6. CONVERSATIONAL REPLY:\n"
+            "   - Be sharp, warm, and proactive. Answer any user questions directly, then ask for the NEXT missing required field with clear examples.\n"
+            "   - If all required fields are complete, confirm readiness for application dossier generation and review!\n\n"
             "Respond in JSON format with EXACTLY these keys:\n"
             "{\n"
-            "  \"target_country\": \"<Country name or null>\",\n"
-            "  \"visa_type\": \"<Visa type or null>\",\n"
+            f"  \"target_country\": \"<{target_country if has_country else 'Extracted country name or null'}>\",\n"
+            f"  \"visa_type\": \"<{visa_type if has_visa else 'Extracted visa type or null'}>\",\n"
             "  \"new_extracted_data\": { ... },\n"
             "  \"reply\": \"...\"\n"
             "}"
         )
         
+        # Assemble message list with recent chat history (up to last 12 turns)
+        messages_payload = [{"role": "system", "content": system_prompt}]
+        if chat_history and isinstance(chat_history, list):
+            # Take last 12 history items
+            recent_history = chat_history[-12:]
+            for turn in recent_history:
+                role = "assistant" if turn.get("role") in ["agent", "assistant"] else "user"
+                text = turn.get("text") or turn.get("content") or ""
+                if text.strip():
+                    messages_payload.append({"role": role, "content": text})
+                    
+        # Append current user message
+        messages_payload.append({"role": "user", "content": message})
+        
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": message}
-            ],
+            messages=messages_payload,
             response_format={"type": "json_object"},
             temperature=0.2
         )
         
         result_json = response.choices[0].message.content
-        return json.loads(result_json)
+        parsed = json.loads(result_json)
+        
+        # Ensure country/visa don't get erased if already established
+        if has_country and (not parsed.get("target_country") or parsed.get("target_country") in ["null", "None", "Unspecified"]):
+            parsed["target_country"] = target_country
+        if has_visa and (not parsed.get("visa_type") or parsed.get("visa_type") in ["null", "None", "General"]):
+            parsed["visa_type"] = visa_type
+            
+        return parsed
     except Exception as e:
         print(f"Chat error: {e}")
         return mock_chat_response(message)

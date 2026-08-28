@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import ThemeToggle from './components/ThemeToggle';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-background">
+    <div className="flex-1 flex flex-col min-h-screen bg-background text-on-background">
       {/* TopAppBar */}
       <header className="bg-surface/90 backdrop-blur-md border-b border-outline-variant shadow-sm w-full top-0 z-50 sticky">
         <div className="flex justify-between items-center w-full px-4 sm:px-8 py-3 max-w-7xl mx-auto">
@@ -37,6 +38,7 @@ export default function LandingPage() {
 
           {/* CTAs */}
           <div className="flex items-center gap-2 sm:gap-4">
+            <ThemeToggle className="hidden sm:flex !p-2" />
             <button 
               className="hidden sm:block text-xs sm:text-sm text-primary font-semibold hover:text-primary-container transition-colors px-2 py-1.5 cursor-pointer" 
               onClick={() => handleAuth('admin', '/admin')}
@@ -50,6 +52,7 @@ export default function LandingPage() {
               <span>Start Application</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
+            <ThemeToggle className="sm:hidden !p-1.5 !rounded-lg" />
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

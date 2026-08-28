@@ -27,6 +27,13 @@ export default function ChatIntake() {
   const [mobileTab, setMobileTab] = useState<'chat' | 'details'>('chat');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-scroll ref
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isUploading]);
+
   // Fetch all cases on mount
   useEffect(() => {
     const urlCaseId = searchParams.get('case_id');
@@ -57,17 +64,21 @@ export default function ChatIntake() {
       .then(res => res.json())
       .then(data => {
         setCaseState(data);
-        const country = data.target_country && data.target_country !== "Unspecified" ? data.target_country : "";
-        const visa = data.visa_type && data.visa_type !== "General" ? ` (${data.visa_type})` : "";
-        
-        if (country) {
-          setMessages([
-            { role: 'agent', text: `Hello! I see you are applying for ${country}${visa}. How can I assist you with your application details today? You can type your details or upload your passport, CV, or screenshot directly using the attachment button.` }
-          ]);
+        if (Array.isArray(data.chat_history) && data.chat_history.length > 0) {
+          setMessages(data.chat_history);
         } else {
-          setMessages([
-            { role: 'agent', text: "Hello! I am your AI immigration assistant. Which country are you looking to apply for a visa to?" }
-          ]);
+          const country = data.target_country && data.target_country !== "Unspecified" ? data.target_country : "";
+          const visa = data.visa_type && data.visa_type !== "General" ? ` (${data.visa_type})` : "";
+          
+          if (country) {
+            setMessages([
+              { role: 'agent', text: `Hello! I see you are applying for ${country}${visa}. How can I assist you with your application details today? You can type your details or upload your passport, CV, or screenshot directly using the attachment button.` }
+            ]);
+          } else {
+            setMessages([
+              { role: 'agent', text: "Hello! I am your AI immigration assistant. Which country are you looking to apply for a visa to?" }
+            ]);
+          }
         }
       })
       .catch(err => console.error(err));
@@ -83,6 +94,9 @@ export default function ChatIntake() {
       const newCase = await res.json();
       setCases(prev => [newCase, ...prev]);
       setSelectedCaseId(newCase.case_id);
+      setMessages([
+        { role: 'agent', text: "Hello! I am your AI immigration assistant. Which country are you looking to apply for a visa to?" }
+      ]);
     } catch (err) {
       console.error("Failed to create new case:", err);
     }
@@ -100,7 +114,11 @@ export default function ChatIntake() {
         body: JSON.stringify({ case_id: selectedCaseId, message: userText })
       });
       const data = await res.json();
-      setMessages(prev => [...prev, { role: 'agent', text: data.reply }]);
+      if (Array.isArray(data.chat_history) && data.chat_history.length > 0) {
+        setMessages(data.chat_history);
+      } else {
+        setMessages(prev => [...prev, { role: 'agent', text: data.reply }]);
+      }
       
       // Refresh case state & cases list so country/sidebar updates live
       fetch(`${API_BASE_URL}/api/cases/${selectedCaseId}`)
@@ -138,7 +156,9 @@ export default function ChatIntake() {
       });
       const data = await res.json();
 
-      if (data.status === 'success' && data.extracted_data) {
+      if (data.status === 'success' && data.chat_history && data.chat_history.length > 0) {
+        setMessages(data.chat_history);
+      } else if (data.status === 'success' && data.extracted_data) {
         const extractedEntries = Object.entries(data.extracted_data);
         let summaryText = `I have processed your document (${file.name}) using OCR. `;
         if (extractedEntries.length > 0) {
@@ -311,6 +331,7 @@ export default function ChatIntake() {
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Bar with Attachment & Multi-Line Shift+Enter Support */}

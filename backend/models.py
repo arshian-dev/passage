@@ -20,3 +20,4 @@ class UserCaseState(Base):
     extracted_data = Column(JSON)
     missing_fields = Column(JSON) # JSON array of strings
     uploaded_documents = Column(JSON)
+    chat_history = Column(JSON, default=list) # JSON array of {role, text, isAttachment, timestamp}

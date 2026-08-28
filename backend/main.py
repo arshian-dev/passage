@@ -16,23 +16,33 @@ from vector_db import get_pinecone_index
 class ChatRequest(BaseModel):
     case_id: str
     message: str
+    chat_history: Optional[list] = None
+
+from seed_data import seed_default_schemas, IMMIGRATION_KNOWLEDGE_BASE
+from database import SessionLocal
 
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB (mock test to ensure module loads)
+    # Initialize DB and seed default immigration schemas
     try:
         models.Base.metadata.create_all(bind=engine)
-        print("Database tables created/verified successfully.")
+        db = SessionLocal()
+        seeded_count = seed_default_schemas(db)
+        db.close()
+        print(f"Database tables verified. Seeded/checked {seeded_count} country schemas.")
     except Exception as e:
-        print(f"Database connection failed: {e}")
-    # Initialize Pinecone
+        print(f"Database initialization error: {e}")
+    # Optional vector DB check
     try:
-        get_pinecone_index()
-        print("Pinecone client initialized successfully.")
+        if os.getenv("PINECONE_API_KEY") and os.getenv("PINECONE_API_KEY") != "your-pinecone-api-key":
+            get_pinecone_index()
+            print("Pinecone client initialized successfully.")
+        else:
+            print("Running in standard relational knowledge-base mode (Pinecone optional).")
     except Exception as e:
-        print(f"Pinecone client initialization failed: {e}")
+        print(f"Vector DB skipped: {e}")
     yield
 
 app = FastAPI(title="Immigration AI Agent Backend", lifespan=lifespan)
@@ -47,6 +57,14 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
+    return {"status": "ok", "message": "Immigration AI Backend Running"}
+
+@app.get("/api/knowledge-base/options")
+def get_knowledge_base_options():
+    """
+    Returns the complete knowledge base catalog of supported destinations, visa pathways, criteria, and documents.
+    """
+    return IMMIGRATION_KNOWLEDGE_BASE
     return {"status": "ok", "message": "Immigration AI Backend Running"}
 
 @app.get("/api/cases")
@@ -69,6 +87,7 @@ def list_cases(db: Session = Depends(get_db)):
             "status": c.status or "In Progress",
             "extracted_data": extracted,
             "missing_fields": missing,
+            "chat_history": c.chat_history or [],
             "completeness": completeness
         })
     return results
@@ -137,7 +156,8 @@ def create_new_case(data: Optional[dict] = None, db: Session = Depends(get_db)):
         visa_type=visa,
         status="In Progress",
         extracted_data=prefilled_data,
-        missing_fields=missing_fields
+        missing_fields=missing_fields,
+        chat_history=[]
     )
     db.add(new_case)
     db.commit()
@@ -150,6 +170,7 @@ def create_new_case(data: Optional[dict] = None, db: Session = Depends(get_db)):
         "status": new_case.status,
         "extracted_data": prefilled_data,
         "missing_fields": missing_fields,
+        "chat_history": [],
         "completeness": completeness
     }
 
@@ -204,6 +225,7 @@ def update_case(case_id: str, req: UpdateCaseRequest, db: Session = Depends(get_
         "status": case.status,
         "extracted_data": extracted,
         "missing_fields": missing,
+        "chat_history": case.chat_history or [],
         "completeness": completeness
     }
 
@@ -230,6 +252,7 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
             "status": "In Progress",
             "extracted_data": {},
             "missing_fields": [],
+            "chat_history": [],
             "completeness": 0
         }
         
@@ -246,6 +269,7 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
         "status": case.status,
         "extracted_data": extracted,
         "missing_fields": missing,
+        "chat_history": case.chat_history or [],
         "completeness": completeness
     }
 
@@ -392,21 +416,29 @@ async def save_form_config(form_config: dict, db: Session = Depends(get_db)):
 
 def get_schema_for_country(country: Optional[str], visa: Optional[str], db: Session) -> dict:
     """
-    Resolves the most relevant form schema for a country/visa pair, falling back to GENERIC.
+    Resolves the most relevant form schema for a country/visa pair, prioritizing exact matches and falling back to country or GENERIC.
     """
-    if country and country not in ["GENERIC", "Unspecified", ""]:
-        # Try exact or substring match
-        matched = db.query(models.CountrySchema).filter(
-            (models.CountrySchema.country_code.ilike(f"%{country}%")) |
-            (models.CountrySchema.visa_type.ilike(f"%{country}%"))
+    if country and country not in ["GENERIC", "Unspecified", "null", "None", ""]:
+        # 1. Try exact/substring match on both country and visa
+        if visa and visa not in ["GENERIC", "General", "null", "None", ""]:
+            matched_both = db.query(models.CountrySchema).filter(
+                models.CountrySchema.country_code.ilike(f"%{country}%"),
+                models.CountrySchema.visa_type.ilike(f"%{visa}%")
+            ).first()
+            if matched_both and matched_both.required_fields:
+                return {"required_fields": matched_both.required_fields, "country_code": matched_both.country_code, "visa_type": matched_both.visa_type}
+        
+        # 2. Try matching country code
+        matched_country = db.query(models.CountrySchema).filter(
+            models.CountrySchema.country_code.ilike(f"%{country}%")
         ).first()
-        if matched and matched.required_fields:
-            return {"required_fields": matched.required_fields}
+        if matched_country and matched_country.required_fields:
+            return {"required_fields": matched_country.required_fields, "country_code": matched_country.country_code, "visa_type": matched_country.visa_type}
             
     # Fallback to GENERIC template
     generic = db.query(models.CountrySchema).filter_by(country_code="GENERIC", visa_type="GENERIC").first()
     if generic and generic.required_fields:
-        return {"required_fields": generic.required_fields}
+        return {"required_fields": generic.required_fields, "country_code": "GENERIC", "visa_type": "GENERIC"}
         
     return {"required_fields": []}
 
@@ -465,6 +497,19 @@ async def upload_applicant_document(file: UploadFile = File(...), case_id: str =
         flag_modified(case, "extracted_data")
         flag_modified(case, "missing_fields")
         
+    # Record upload and extraction summary in chat history
+    existing_history = list(case.chat_history or [])
+    existing_history.append({"role": "user", "text": f"📎 Uploaded Document: {file.filename}", "isAttachment": True})
+    extracted_entries = list(new_extracted.items())
+    if extracted_entries:
+        fields_str = ", ".join([f"{k}: {v}" for k, v in extracted_entries])
+        summary_reply = f"I have processed your document ({file.filename}) using OCR. Extracted: {fields_str}. Your application has been updated!"
+    else:
+        summary_reply = f"I have received and attached {file.filename} to your case file."
+    existing_history.append({"role": "agent", "text": summary_reply})
+    case.chat_history = existing_history
+    flag_modified(case, "chat_history")
+
     db.commit()
     db.refresh(case)
     
@@ -472,7 +517,8 @@ async def upload_applicant_document(file: UploadFile = File(...), case_id: str =
         "status": "success",
         "extracted_data": new_extracted,
         "total_extracted_data": case.extracted_data,
-        "confidence_scores": extracted.get("confidence_scores", {})
+        "confidence_scores": extracted.get("confidence_scores", {}),
+        "chat_history": case.chat_history or []
     }
 
 @app.post("/api/intake/chat")
@@ -488,7 +534,7 @@ async def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         missing_fields = calculate_missing_fields({}, schema_fields)
         case = models.UserCaseState(
             case_id=req.case_id, target_country="Unspecified", visa_type="General", status="In Progress",
-            extracted_data={}, missing_fields=missing_fields
+            extracted_data={}, missing_fields=missing_fields, chat_history=[]
         )
         db.add(case)
         db.commit()
@@ -513,11 +559,14 @@ async def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         "unified_profile": unified_profile
     }
     
-    llm_response = process_chat_message_with_llm(req.message, case_state, schema_dict)
+    # Record user message in history before LLM processing
+    existing_history = list(case.chat_history or [])
+    
+    llm_response = process_chat_message_with_llm(req.message, case_state, schema_dict, chat_history=existing_history)
     
     # Check if a new target country or visa type was extracted
     new_country = llm_response.get("target_country")
-    if new_country and new_country.lower() not in ["null", "none", ""]:
+    if new_country and new_country.lower() not in ["null", "none", "", "unspecified"]:
         case.target_country = new_country
         flag_modified(case, "target_country")
         # Re-resolve schema for the newly detected country
@@ -525,9 +574,11 @@ async def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         schema_fields = schema_dict.get("required_fields", [])
         
     new_visa = llm_response.get("visa_type")
-    if new_visa and new_visa.lower() not in ["null", "none", ""]:
+    if new_visa and new_visa.lower() not in ["null", "none", "", "general"]:
         case.visa_type = new_visa
         flag_modified(case, "visa_type")
+        schema_dict = get_schema_for_country(case.target_country, case.visa_type, db)
+        schema_fields = schema_dict.get("required_fields", [])
     
     new_extracted = llm_response.get("new_extracted_data", {})
     if new_extracted:
@@ -539,13 +590,22 @@ async def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         flag_modified(case, "extracted_data")
         flag_modified(case, "missing_fields")
     
+    reply_text = llm_response.get("reply", "I'm having trouble processing that.")
+    
+    # Append user and agent turn to persistent chat history
+    existing_history.append({"role": "user", "text": req.message})
+    existing_history.append({"role": "agent", "text": reply_text})
+    case.chat_history = existing_history
+    flag_modified(case, "chat_history")
+    
     db.commit()
     db.refresh(case)
         
     return {
-        "reply": llm_response.get("reply", "I'm having trouble processing that."),
+        "reply": reply_text,
         "target_country": case.target_country,
-        "visa_type": case.visa_type
+        "visa_type": case.visa_type,
+        "chat_history": case.chat_history or []
     }
 
 @app.post("/api/application/generate")
