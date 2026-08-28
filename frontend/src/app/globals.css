@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-on-primary-fixed-variant: #2d476f;
+  --color-on-primary-fixed: #001b3c;
+  --color-secondary-fixed-dim: #89d3d4;
+  --color-on-secondary: #ffffff;
+  --color-on-surface: #111c2c;
+  --color-outline: #74777f;
+  --color-on-error: #ffffff;
+  --color-primary-container: #1a365d;
+  --color-on-surface-variant: #43474e;
+  --color-on-primary: #ffffff;
+  --color-secondary-container: #a2eded;
+  --color-outline-variant: #c4c6cf;
+  --color-inverse-primary: #adc7f7;
+  --color-tertiary-fixed-dim: #f8bc4b;
+  --color-tertiary-fixed: #ffdeaa;
+  --color-on-tertiary-fixed: #271900;
+  --color-on-secondary-fixed: #002020;
+  --color-on-tertiary-container: #cb9524;
+  --color-secondary-fixed: #a5eff0;
+  --color-error: #ba1a1a;
+  --color-primary-fixed: #d6e3ff;
+  --color-secondary: #13696a;
+  --color-on-primary-container: #86a0cd;
+  --color-tertiary: #2d1d00;
+  --color-primary-fixed-dim: #adc7f7;
+  --color-surface-container-low: #f0f3ff;
+  --color-tertiary-container: #493100;
+  --color-surface-tint: #455f88;
+  --color-surface: #f9f9ff;
+  --color-on-secondary-container: #1a6d6e;
+  --color-on-tertiary-fixed-variant: #5f4100;
+  --color-surface-container-lowest: #ffffff;
+  --color-primary: #002045;
+  --color-inverse-surface: #263142;
+  --color-surface-dim: #cfdaf1;
+  --color-on-tertiary: #ffffff;
+  --color-on-background: #111c2c;
+  --color-surface-variant: #d8e3fa;
+  --color-inverse-on-surface: #ebf1ff;
+  --color-on-error-container: #93000a;
+  --color-surface-container-high: #dee8ff;
+  --color-surface-bright: #f9f9ff;
+  --color-surface-container: #e7eeff;
+  --color-on-secondary-fixed-variant: #004f50;
+  --color-surface-container-highest: #d8e3fa;
+  --color-background: #f9f9ff;
+  --color-error-container: #ffdad6;
+
+}
+
+@utility text-headline-lg {
+  font-size: 32px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+@utility text-label-md {
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+@utility text-body-md {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+@utility text-headline-md {
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+@utility text-headline-lg-mobile {
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+@utility text-headline-sm {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+@utility text-display {
+  font-size: 48px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+@utility text-body-lg {
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+@utility text-body-sm {
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Base styles and custom classes */
+body {
+  background: var(--color-background);
+  color: var(--color-on-background);
+  font-family: var(--font-body-md);
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.fill {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Ambient Shadows */
+.shadow-ambient {
+    box-shadow: 0 4px 6px -1px rgba(26, 54, 93, 0.1), 0 2px 4px -1px rgba(26, 54, 93, 0.06);
+}
+.shadow-ambient-hover:hover {
+    box-shadow: 0 10px 15px -3px rgba(26, 54, 93, 0.1), 0 4px 6px -2px rgba(26, 54, 93, 0.05);
+    transform: translateY(-1px);
+}
+
+/* Drag and Drop Area Focus */
+.drag-active {
+    border-color: #1a365d;
+    background-color: #f0f3ff;
+}
+
+/* Landing Page Specific Utilities */
+.shadow-ambient-lg {
+    box-shadow: 0 10px 25px -5px rgba(26, 54, 93, 0.15), 0 8px 10px -6px rgba(26, 54, 93, 0.1);
+}
+
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(26, 54, 93, 0.15), 0 10px 10px -5px rgba(26, 54, 93, 0.1);
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Decorative Backgrounds */
+.bg-grid-pattern {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, rgba(0, 32, 69, 0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0, 32, 69, 0.05) 1px, transparent 1px);
+}
+.bg-dots-pattern {
+    background-image: radial-gradient(rgba(0, 32, 69, 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+}

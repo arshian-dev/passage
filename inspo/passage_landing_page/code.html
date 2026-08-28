@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Passage - Navigate Global Immigration with AI Precision</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected via guidelines -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#2d1d00",
+                      "surface-container-low": "#f0f3ff",
+                      "secondary-fixed-dim": "#89d3d4",
+                      "tertiary-container": "#493100",
+                      "surface-variant": "#d8e3fa",
+                      "surface-bright": "#f9f9ff",
+                      "surface-container-high": "#dee8ff",
+                      "surface": "#f9f9ff",
+                      "on-primary-fixed-variant": "#2d476f",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed-variant": "#5f4100",
+                      "on-error": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "surface-container": "#e7eeff",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#111c2c",
+                      "on-secondary-fixed-variant": "#004f50",
+                      "on-surface-variant": "#43474e",
+                      "secondary-fixed": "#a5eff0",
+                      "on-surface": "#111c2c",
+                      "on-tertiary-fixed": "#271900",
+                      "primary-fixed-dim": "#adc7f7",
+                      "on-secondary-container": "#1a6d6e",
+                      "tertiary-fixed-dim": "#f8bc4b",
+                      "background": "#f9f9ff",
+                      "surface-dim": "#cfdaf1",
+                      "primary-fixed": "#d6e3ff",
+                      "inverse-surface": "#263142",
+                      "inverse-primary": "#adc7f7",
+                      "on-tertiary-container": "#cb9524",
+                      "surface-container-highest": "#d8e3fa",
+                      "on-secondary-fixed": "#002020",
+                      "outline-variant": "#c4c6cf",
+                      "secondary-container": "#a2eded",
+                      "primary-container": "#1a365d",
+                      "primary": "#002045",
+                      "inverse-on-surface": "#ebf1ff",
+                      "tertiary-fixed": "#ffdeaa",
+                      "error": "#ba1a1a",
+                      "error-container": "#ffdad6",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#455f88",
+                      "secondary": "#13696a",
+                      "on-primary-container": "#86a0cd",
+                      "on-primary-fixed": "#001b3c",
+                      "outline": "#74777f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "max-width": "1200px",
+                      "margin-mobile": "16px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "sm": "12px",
+                      "xl": "40px",
+                      "gutter": "24px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "display": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.25",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "1.25",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      }
+              }
+          },
+        }
+    </script>
+<style>
+        /* Base styles from guidelines */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9ff;
+            color: #111c2c;
+        }
+        
+        /* Ambient shadows */
+        .shadow-ambient {
+            box-shadow: 0 4px 6px -1px rgba(26, 54, 93, 0.1), 0 2px 4px -1px rgba(26, 54, 93, 0.06);
+        }
+        .shadow-ambient-lg {
+            box-shadow: 0 10px 25px -5px rgba(26, 54, 93, 0.15), 0 8px 10px -6px rgba(26, 54, 93, 0.1);
+        }
+        
+        /* Micro-interactions */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(26, 54, 93, 0.15), 0 10px 10px -5px rgba(26, 54, 93, 0.1);
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="bg-surface/90 backdrop-blur-md border-b border-outline-variant shadow-sm w-full top-0 z-50 sticky">
+<div class="flex justify-between items-center w-full px-lg py-sm max-w-max-width mx-auto">
+<!-- Brand -->
+<div class="flex items-center gap-2">
+<img alt="Passage Logo" class="h-8 w-auto rounded-md object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWFGHELppNHXEm8W74mG7wPQ4Mbd5eTsCYJBK_3Gj6koNaG0f3HkovVYW7JSobtspD3KkAQdkC0tbPxlTIhvs26k1GLEfdkPuSg4RRKnOSvp0WXKYeb4mRD7D-pB2f5_hPkEcUT_YC2i-lv7Vytp9la7p7OV0twL3OtPBCXa40RMNFhpK3n29URct2G3tRKSwYRo3FgvCgmANzTkPD574cXfTgYx9UGHROxKmEUUBdJdzCkPhnlm0"/>
+</div>
+<!-- Desktop Nav Links -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors font-medium" href="#features">Features</a>
+<a class="text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors font-medium" href="#how-it-works">How it Works</a>
+<a class="text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors font-medium" href="#trust">Trust</a>
+</nav>
+<!-- CTAs -->
+<div class="flex items-center gap-6">
+<a class="hidden md:block text-body-md font-body-md text-primary font-semibold hover:text-primary-container transition-colors" href="#">
+                    Log In
+                </a>
+<button class="bg-primary text-on-primary text-label-md font-label-md uppercase px-6 py-2.5 rounded-lg hover-lift shadow-ambient flex items-center gap-2 transition-all">
+<span>Start Application</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="relative pt-24 pb-32 overflow-hidden bg-surface-container-low min-h-[85vh] flex items-center">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0">
+<img alt="Global Connectivity" class="w-full h-full object-cover opacity-60 mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlRvK8AdtjkAthBAqSYUn_DdiZzrIgmh3dca0MCG3zeWzvmWR60oTVFtKixOQeIDJuwBU30HH5WhJ3oXORQmlqStGnae_VLgcDmy9YwoYAYqEwiMF5tUejVMmBcgc5Fgq-c2vtkuHeZwSXbOW8LNgYlfnOMmIPxuW7_4i8Bt_Zr68B77E73aDou6TcjEUbK3LpfGlQe4ms-bjVQhEo4RQJaeVK3xYK27TzK7Kx8iJprTDgBjhmaLU"/>
+<div class="absolute inset-0 bg-gradient-to-b from-surface/40 via-transparent to-surface-container-low/90"></div>
+</div>
+<div class="max-w-max-width mx-auto px-lg relative z-10 grid md:grid-cols-12 gap-12 items-center w-full">
+<!-- Hero Content -->
+<div class="md:col-span-7 flex flex-col gap-8">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-on-surface-variant text-label-md font-label-md w-max shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+<span class="tracking-wide">Enterprise Grade Compliance</span>
+</div>
+<h1 class="text-display font-display leading-[1.1] text-on-surface">
+                        Navigate Global Immigration with <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-container to-secondary block mt-2">AI Precision</span>
+</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-xl text-lg leading-relaxed">
+                        Automate complex visa applications through conversational intake and intelligent document parsing. Turn months of bureaucratic delays into days of confident progress.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 mt-2">
+<button class="bg-primary hover:bg-primary-container transition-colors text-on-primary px-8 py-3.5 rounded-lg text-body-md font-headline-sm hover-lift shadow-ambient-lg flex justify-center items-center gap-2">
+                            Start Your Application
+                            <span class="material-symbols-outlined text-lg">rocket_launch</span>
+</button>
+<button class="glass text-on-surface px-8 py-3.5 rounded-lg text-body-md font-headline-sm hover:bg-white/90 transition-colors flex justify-center items-center gap-2 shadow-sm">
+                            Book a Demo for Agencies
+                            <span class="material-symbols-outlined text-lg">calendar_month</span>
+</button>
+</div>
+<div class="flex items-center gap-4 mt-8 pt-4 border-t border-outline-variant/30 max-w-max">
+<div class="flex -space-x-3">
+<div class="w-10 h-10 rounded-full border-2 border-surface overflow-hidden bg-surface-variant"></div>
+<div class="w-10 h-10 rounded-full border-2 border-surface overflow-hidden bg-primary-fixed"></div>
+<div class="w-10 h-10 rounded-full border-2 border-surface overflow-hidden bg-secondary-fixed"></div>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">
+                            Trusted by <span class="font-semibold text-primary">5,000+</span> applicants globally.
+                        </div>
+</div>
+</div>
+<!-- Hero Visual -->
+<div class="md:col-span-5 relative hidden md:block">
+<!-- Main App Card -->
+<div class="glass rounded-2xl shadow-ambient-lg p-6 relative z-10 hover-lift transform rotate-1 transition-transform duration-500 hover:rotate-0 border-white/60">
+<div class="flex items-center justify-between border-b border-outline-variant/50 pb-4 mb-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary text-on-primary rounded-xl flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<div>
+<div class="text-headline-sm font-headline-sm text-primary">Passage Assistant</div>
+<div class="text-label-md font-label-md text-secondary flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> Online
+                                    </div>
+</div>
+</div>
+<span class="px-3 py-1 bg-surface-container/50 text-on-surface text-xs font-semibold tracking-wider uppercase rounded-full">Secure Session</span>
+</div>
+<!-- Chat Mockup -->
+<div class="flex flex-col gap-5">
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex-shrink-0 flex items-center justify-center mt-1">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+</div>
+<div class="bg-white/80 text-on-surface p-3.5 rounded-xl rounded-tl-sm text-body-sm shadow-sm border border-white">
+                                    Hello! I've successfully parsed your passport and employment letter. We are ready to generate your O-1 Visa petition. Shall we proceed?
+                                </div>
+</div>
+<div class="flex gap-3 justify-end mt-1">
+<div class="bg-primary text-on-primary p-3.5 rounded-xl rounded-tr-sm text-body-sm shadow-md">
+                                    Yes, please generate the draft.
+                                </div>
+</div>
+<!-- Processing State -->
+<div class="flex items-center gap-3 mt-3 px-2 text-secondary text-sm font-medium bg-secondary/10 py-2 rounded-lg">
+<span class="material-symbols-outlined animate-spin text-[18px]">sync</span>
+<span>Generating petition based on 8 CFR § 214.2(o)...</span>
+</div>
+</div>
+</div>
+<!-- Decorative Floating Card -->
+<div class="absolute -bottom-8 -left-10 glass rounded-xl shadow-ambient-lg p-4 flex items-center gap-4 z-20 hover-lift transform -rotate-3 transition-transform duration-500 hover:rotate-0 border-white/60">
+<div class="w-12 h-12 rounded-full bg-secondary text-white shadow-md flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+</div>
+<div>
+<div class="text-body-md font-headline-sm text-on-surface font-semibold">Data Extraction</div>
+<div class="text-body-sm font-body-sm text-secondary flex items-center gap-1.5 font-medium">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                98.4% Accuracy Match
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface border-t border-outline-variant py-12">
+<div class="max-w-max-width mx-auto px-lg">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<img alt="Passage Logo" class="h-8 w-auto rounded-md object-contain grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWFGHELppNHXEm8W74mG7wPQ4Mbd5eTsCYJBK_3Gj6koNaG0f3HkovVYW7JSobtspD3KkAQdkC0tbPxlTIhvs26k1GLEfdkPuSg4RRKnOSvp0WXKYeb4mRD7D-pB2f5_hPkEcUT_YC2i-lv7Vytp9la7p7OV0twL3OtPBCXa40RMNFhpK3n29URct2G3tRKSwYRo3FgvCgmANzTkPD574cXfTgYx9UGHROxKmEUUBdJdzCkPhnlm0"/>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">
+                    © 2024 Passage. Secure, Intelligent Immigration.
+                </div>
+</div>
+</div>
+</footer>
+</body></html>
