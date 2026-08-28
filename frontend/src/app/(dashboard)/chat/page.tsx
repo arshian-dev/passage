@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { API_BASE_URL } from '@/config/api';
+import MarkdownView from '@/app/components/MarkdownView';
 
 interface CaseItem {
   case_id: string;
@@ -322,13 +323,21 @@ export default function ChatIntake() {
                     </div>
                   )}
                   <div className={msg.role === 'user' ? 
-                    `bg-primary text-on-primary p-3 sm:p-4 rounded-2xl rounded-tr-sm text-xs sm:text-sm shadow-xs whitespace-pre-wrap leading-relaxed ${msg.isAttachment ? 'flex items-center gap-2 font-medium bg-primary-container' : ''}` : 
-                    "bg-surface-container-low p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs sm:text-sm text-on-surface border border-outline-variant shadow-xs whitespace-pre-wrap leading-relaxed"
+                    `bg-primary text-on-primary p-3 sm:p-4 rounded-2xl rounded-tr-sm text-xs sm:text-sm shadow-xs leading-relaxed ${msg.isAttachment ? 'flex items-center gap-2 font-medium bg-primary-container' : ''}` : 
+                    "bg-surface-container-low p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs sm:text-sm text-on-surface border border-outline-variant shadow-xs leading-relaxed"
                   }>
-                    {msg.isAttachment && (
-                      <span className="material-symbols-outlined text-[18px]">description</span>
+                    {msg.isAttachment ? (
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">description</span>
+                        <span className="font-semibold">{msg.text}</span>
+                      </div>
+                    ) : (
+                      msg.role === 'agent' ? (
+                        <MarkdownView content={msg.text} />
+                      ) : (
+                        <div className="whitespace-pre-wrap">{msg.text}</div>
+                      )
                     )}
-                    {msg.text}
                   </div>
                 </div>
               ))}
