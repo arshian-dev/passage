@@ -131,6 +131,17 @@ export default function ChatIntake() {
         setMessages(prev => [...prev, { role: 'agent', text: data.reply }]);
       }
       
+      if (data.extracted_data || data.missing_fields) {
+        setCaseState(prev => prev ? {
+          ...prev,
+          target_country: data.target_country || prev.target_country,
+          visa_type: data.visa_type || prev.visa_type,
+          extracted_data: data.extracted_data || prev.extracted_data,
+          missing_fields: data.missing_fields || prev.missing_fields,
+          completeness: data.completeness ?? prev.completeness
+        } : prev);
+      }
+      
       // Refresh case state & cases list so country/sidebar updates live
       fetch(`${API_BASE_URL}/api/cases/${selectedCaseId}`)
         .then(r => r.ok ? r.json() : null)

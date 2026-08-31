@@ -1,12 +1,42 @@
 "use client";
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import ThemeToggle from './components/ThemeToggle';
+import { motion, useScroll, useTransform, Variants } from 'framer-motion';
+
+// Animation Variants
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1
+    }
+  }
+};
 
 export default function LandingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Parallax scroll effect for hero
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+  const heroImageY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0.3]);
 
   const handleAuth = (role: 'admin' | 'client', path: string) => {
     document.cookie = `role=${role}; path=/`;
@@ -14,49 +44,65 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-background text-on-background">
-      {/* TopAppBar */}
-      <header className="bg-surface/90 backdrop-blur-md border-b border-outline-variant shadow-sm w-full top-0 z-50 sticky">
-        <div className="flex justify-between items-center w-full px-4 sm:px-8 py-3 max-w-7xl mx-auto">
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-xl sm:text-2xl font-bold">flight_takeoff</span>
-            </div>
+    <div className="flex-1 flex flex-col min-h-screen bg-[#fafcff] text-[#0f172a] overflow-x-hidden selection:bg-[#cce0ff] selection:text-[#002045]">
+      
+      {/* Subtle Global Ambient Glows */}
+      <div className="fixed top-0 left-1/4 w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="fixed top-1/3 right-10 w-[500px] h-[500px] bg-teal-100/30 rounded-full blur-[130px] pointer-events-none -z-10" />
+
+      {/* Top Navigation Bar */}
+      <motion.header 
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="bg-white/80 backdrop-blur-lg border-b border-slate-200/70 shadow-xs w-full top-0 z-50 sticky"
+      >
+        <div className="flex justify-between items-center w-full px-4 sm:px-8 py-3.5 max-w-7xl mx-auto">
+          {/* Brand Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <motion.div 
+              whileHover={{ rotate: 6, scale: 1.06 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="w-10 h-10 rounded-xl bg-[#002045] flex items-center justify-center text-white shadow-sm"
+            >
+              <span className="material-symbols-outlined text-2xl font-bold">flight_takeoff</span>
+            </motion.div>
             <div>
-              <span className="text-base sm:text-lg font-bold text-primary leading-tight block">Passage</span>
-              <span className="text-[9px] sm:text-[10px] font-semibold text-secondary uppercase tracking-wider block">AI Immigration Platform</span>
+              <span className="text-lg font-bold text-[#002045] leading-tight block tracking-tight">Passage</span>
+              <span className="text-[10px] font-semibold text-[#0d9488] uppercase tracking-wider block">AI Immigration</span>
             </div>
           </Link>
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8">
-            <a className="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#features">Features</a>
-            <a className="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
-            <a className="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#trust">Security</a>
+            <a className="text-sm font-semibold text-[#475569] hover:text-[#002045] transition-colors" href="#features">Features</a>
+            <a className="text-sm font-semibold text-[#475569] hover:text-[#002045] transition-colors" href="#form-filling">Automated Filing</a>
+            <a className="text-sm font-semibold text-[#475569] hover:text-[#002045] transition-colors" href="#intake">Conversational AI</a>
+            <a className="text-sm font-semibold text-[#475569] hover:text-[#002045] transition-colors" href="#how-it-works">Workflow</a>
+            <a className="text-sm font-semibold text-[#475569] hover:text-[#002045] transition-colors" href="#trust">Security</a>
           </nav>
 
-          {/* CTAs */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <ThemeToggle className="hidden sm:flex !p-2" />
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-3 sm:gap-4">
             <button 
-              className="hidden sm:block text-xs sm:text-sm text-primary font-semibold hover:text-primary-container transition-colors px-2 py-1.5 cursor-pointer" 
+              className="hidden sm:block text-xs sm:text-sm text-[#002045] font-semibold hover:text-[#061a33] transition-colors px-2 py-1.5 cursor-pointer" 
               onClick={() => handleAuth('admin', '/admin')}
             >
-              Log In
+              Admin Login
             </button>
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => handleAuth('client', '/chat')} 
-              className="bg-primary text-on-primary text-[11px] sm:text-xs font-bold uppercase tracking-wider px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl hover-lift shadow-ambient flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer"
+              className="bg-[#002045] hover:bg-[#061a33] text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all cursor-pointer"
             >
-              <span>Start Application</span>
+              <span>Start Free Intake</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
-            <ThemeToggle className="sm:hidden !p-1.5 !rounded-lg" />
+            </motion.button>
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
+              className="md:hidden p-2 text-[#475569] hover:text-[#002045] hover:bg-slate-100 rounded-lg transition-colors"
               aria-label="Toggle navigation menu"
             >
               <span className="material-symbols-outlined text-2xl">{mobileMenuOpen ? 'close' : 'menu'}</span>
@@ -66,396 +112,651 @@ export default function LandingPage() {
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-surface border-b border-outline-variant px-6 py-4 space-y-3 shadow-lg animate-in slide-in-from-top-2 duration-200">
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-white border-b border-slate-200 px-6 py-4 space-y-3 shadow-lg"
+          >
             <nav className="flex flex-col space-y-3">
-              <a 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm font-semibold text-on-surface hover:text-primary transition-colors py-1 flex items-center justify-between" 
-                href="#features"
-              >
-                <span>Features</span>
-                <span className="material-symbols-outlined text-sm text-outline">chevron_right</span>
-              </a>
-              <a 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm font-semibold text-on-surface hover:text-primary transition-colors py-1 flex items-center justify-between" 
-                href="#how-it-works"
-              >
-                <span>How it Works</span>
-                <span className="material-symbols-outlined text-sm text-outline">chevron_right</span>
-              </a>
-              <a 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm font-semibold text-on-surface hover:text-primary transition-colors py-1 flex items-center justify-between" 
-                href="#trust"
-              >
-                <span>Security & Compliance</span>
-                <span className="material-symbols-outlined text-sm text-outline">chevron_right</span>
-              </a>
+              <a onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-[#0f172a] hover:text-[#002045] py-1" href="#features">Features</a>
+              <a onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-[#0f172a] hover:text-[#002045] py-1" href="#form-filling">Automated Filing</a>
+              <a onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-[#0f172a] hover:text-[#002045] py-1" href="#intake">Conversational AI</a>
+              <a onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-[#0f172a] hover:text-[#002045] py-1" href="#how-it-works">Workflow</a>
+              <a onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-[#0f172a] hover:text-[#002045] py-1" href="#trust">Security</a>
             </nav>
-            <div className="pt-3 border-t border-outline-variant/60 flex flex-col gap-2">
+            <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
               <button 
                 onClick={() => { setMobileMenuOpen(false); handleAuth('admin', '/admin'); }}
-                className="w-full py-2.5 text-center text-xs font-bold text-primary bg-primary/10 rounded-xl"
+                className="w-full py-2.5 text-center text-xs font-bold text-[#002045] bg-blue-50 rounded-xl"
               >
                 Admin Login
               </button>
               <button 
                 onClick={() => { setMobileMenuOpen(false); handleAuth('client', '/chat'); }}
-                className="w-full py-2.5 text-center text-xs font-bold text-on-primary bg-primary rounded-xl shadow-sm"
+                className="w-full py-2.5 text-center text-xs font-bold text-white bg-[#002045] rounded-xl shadow-sm"
               >
-                Start Free Application
+                Start Free Intake
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
-      </header>
+      </motion.header>
 
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="relative pt-12 sm:pt-20 md:pt-24 pb-16 sm:pb-24 md:pb-32 overflow-hidden bg-surface-container-low min-h-[80vh] flex items-center">
-          {/* Background Image */}
-          <div className="absolute inset-0 z-0">
-            <img alt="Global Connectivity" className="w-full h-full object-cover opacity-40 md:opacity-50 mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AEtjO1XGgpGwMIrYJQUduby-39twI04MDsQsb0l9TPYYzGpgDEckTIQKl83bqHU7zPkyKZ9wYWFOwyEww-P3lW7qGmyDXz9TXs8viuIma1JMFBhEi3g_j3O9vjxKSGCs0rVfCMbaY9oxPvWGLT6gIFxn2oWI5vKXCXKus1LjdVIu2xn93hcqif4VDJ7G0iXJcdGBTrMccPP4PBA9tRXagA_sUsVDhra3CJaD2DlDjtrypTW_DZv3NETTgwPy" />
-            <div className="absolute inset-0 bg-gradient-to-br from-surface-container-low/95 via-surface/85 to-surface-container/95"></div>
-            <div className="absolute inset-0 bg-dots-pattern opacity-40 mix-blend-overlay"></div>
-          </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10 grid md:grid-cols-12 gap-8 md:gap-12 items-center w-full">
-            {/* Hero Content */}
-            <div className="md:col-span-6 flex flex-col gap-5 sm:gap-6">
-              <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 rounded-full glass text-on-surface-variant text-[11px] sm:text-xs font-semibold w-max shadow-sm border border-outline-variant/60">
-                <span className="material-symbols-outlined text-[14px] sm:text-[15px] text-secondary">verified</span>
-                <span className="tracking-wide">Enterprise Grade Compliance</span>
-              </div>
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.15] text-on-surface">
-                Navigate Global Immigration with <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-primary-container block mt-1">AI Precision</span>
-              </h1>
-              <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-xl leading-relaxed">
-                Automate complex visa applications through conversational intake and intelligent document parsing. Turn months of bureaucratic delays into days of confident progress.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-1 sm:pt-2">
-                <button onClick={() => handleAuth('client', '/chat')} className="w-full sm:w-auto bg-primary hover:bg-primary-container transition-colors text-on-primary px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-bold hover-lift shadow-ambient-lg flex justify-center items-center gap-2 cursor-pointer">
-                  Start Your Application
-                  <span className="material-symbols-outlined text-base sm:text-lg">rocket_launch</span>
-                </button>
-                <button onClick={() => handleAuth('admin', '/admin')} className="w-full sm:w-auto glass bg-surface-container/60 text-on-surface px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-bold hover:bg-surface-container transition-colors flex justify-center items-center gap-2 shadow-sm border border-outline-variant cursor-pointer">
-                  Admin Console
-                  <span className="material-symbols-outlined text-base sm:text-lg">admin_panel_settings</span>
-                </button>
-              </div>
+        {/* ========================================================================= */}
+        {/* 1. HERO SECTION */}
+        {/* ========================================================================= */}
+        <section ref={heroRef} className="relative pt-12 sm:pt-20 md:pt-28 pb-16 sm:pb-24 md:pb-32 overflow-hidden min-h-[85vh] flex items-center">
+          {/* Airplane Wing Photo Background with Organic Soft Edge Fade */}
+          <motion.div 
+            style={{ y: heroImageY, opacity: heroOpacity }}
+            className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
+          >
+            <img 
+              alt="Airplane Wing Cutting Clouds" 
+              className="w-full h-full object-cover object-center md:object-right-top opacity-70 sm:opacity-75 select-none scale-105" 
+              src="/assets/Airplane_wing_cutting_clouds_202608310540.jpeg" 
+            />
+            {/* Smooth luminous gradients creating comfortable whitespace for text */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#fafcff] via-[#fafcff]/90 to-[#fafcff]/20"></div>
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#fafcff] to-transparent"></div>
+          </motion.div>
 
-              {/* Mobile Hero Visual Preview */}
-              <div className="md:hidden mt-4">
-                <div className="glass bg-surface/90 rounded-2xl p-4 shadow-ambient border border-outline-variant space-y-3">
-                  <div className="flex items-center justify-between border-b border-outline-variant/40 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-primary text-on-primary rounded-lg flex items-center justify-center text-xs">
-                        <span className="material-symbols-outlined text-sm">smart_toy</span>
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-primary">Passage Assistant</div>
-                        <div className="text-[10px] text-secondary flex items-center gap-1 font-semibold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span> Online • OCR Active
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-[9px] font-bold uppercase bg-surface-container px-2 py-0.5 rounded-full text-on-surface">Verified</span>
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    <div className="bg-surface-container-lowest p-2.5 rounded-xl text-on-surface shadow-2xs border border-outline-variant/40 leading-snug">
-                      📄 Document parsed! Verified passport details with 99.8% OCR accuracy.
-                    </div>
-                    <div className="bg-primary text-on-primary p-2.5 rounded-xl text-right ml-auto max-w-[85%] leading-snug">
-                      Ready to generate final submission package.
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10 grid md:grid-cols-12 gap-10 md:gap-12 items-center w-full">
+            {/* Left Hero Content */}
+            <motion.div 
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              className="md:col-span-6 flex flex-col gap-6"
+            >
+              <motion.div 
+                variants={fadeInUp}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 shadow-2xs border border-slate-200/80 text-[#002045] text-xs font-semibold w-max"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#0d9488] animate-pulse"></span>
+                <span>AI-Powered Immigration Intake &amp; Form Automation</span>
+              </motion.div>
 
-              <div className="flex items-center gap-4 mt-2 sm:mt-6 pt-4 sm:pt-6 border-t border-outline-variant/30 max-w-max">
-                <div className="flex -space-x-2.5">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-surface bg-surface-variant flex items-center justify-center text-[9px] sm:text-[10px] font-bold">AK</div>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-surface bg-primary-fixed text-primary flex items-center justify-center text-[9px] sm:text-[10px] font-bold">AM</div>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-surface bg-secondary-fixed text-secondary flex items-center justify-center text-[9px] sm:text-[10px] font-bold">JD</div>
-                </div>
-                <div className="text-[11px] sm:text-xs text-on-surface-variant">
-                  Trusted by <span className="font-bold text-primary">5,000+</span> applicants globally.
-                </div>
-              </div>
-            </div>
+              <motion.h1 
+                variants={fadeInUp}
+                className="text-3.5xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.12] text-[#002045] tracking-tight"
+              >
+                Immigration paperwork, <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#002045] via-[#003870] to-[#0d9488]">
+                  streamlined by AI.
+                </span>
+              </motion.h1>
 
-            {/* Desktop Hero Visual */}
-            <div className="md:col-span-6 relative hidden md:block">
-              {/* Main App Card */}
-              <div className="glass bg-surface/90 rounded-3xl shadow-ambient-lg p-7 relative z-10 hover-lift transform rotate-1 transition-transform duration-500 hover:rotate-0 border border-outline-variant">
-                <div className="flex items-center justify-between border-b border-outline-variant/40 pb-4 mb-5">
+              <motion.p 
+                variants={fadeInUp}
+                className="text-base sm:text-lg text-[#475569] max-w-xl leading-relaxed"
+              >
+                Converse with an intelligent assistant, upload raw passport scans and CVs, and auto-populate official government petition forms with zero manual errors.
+              </motion.p>
+
+              {/* CTAs */}
+              <motion.div 
+                variants={fadeInUp}
+                className="flex flex-col sm:flex-row gap-3.5 pt-1"
+              >
+                <motion.button 
+                  whileHover={{ scale: 1.02, translateY: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleAuth('client', '/chat')} 
+                  className="w-full sm:w-auto bg-[#002045] hover:bg-[#061a33] transition-all text-white px-7 py-3.5 rounded-xl text-sm font-bold shadow-md flex justify-center items-center gap-2 cursor-pointer"
+                >
+                  <span>Start Your Application</span>
+                  <span className="material-symbols-outlined text-base">rocket_launch</span>
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.02, translateY: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleAuth('admin', '/admin')} 
+                  className="w-full sm:w-auto bg-white hover:bg-slate-50 text-[#002045] px-7 py-3.5 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2 shadow-2xs border border-slate-200 cursor-pointer"
+                >
+                  <span>Admin Console</span>
+                  <span className="material-symbols-outlined text-base">admin_panel_settings</span>
+                </motion.button>
+              </motion.div>
+
+              {/* Trust Badge */}
+              <motion.div 
+                variants={fadeInUp}
+                className="flex items-center gap-4 pt-4 border-t border-slate-200/60 max-w-max"
+              >
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] font-bold shadow-2xs">CA</div>
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-100 text-[#002045] flex items-center justify-center text-[10px] font-bold shadow-2xs">DE</div>
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-teal-100 text-[#0d9488] flex items-center justify-center text-[10px] font-bold shadow-2xs">US</div>
+                </div>
+                <div className="text-xs text-[#475569] font-medium">
+                  Trusted across <span className="font-bold text-[#002045]">Express Entry, Chancenkarte, &amp; Global Visas</span>.
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Right Hero Visual Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: 30, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="md:col-span-6 relative hidden md:block"
+            >
+              {/* Main Frosted Glass Card */}
+              <motion.div 
+                animate={{ y: [0, -5, 0] }}
+                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                className="bg-white/95 backdrop-blur-md rounded-3xl shadow-[0_20px_50px_rgba(0,32,69,0.08)] p-7 relative z-10 border border-slate-200/80"
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary text-on-primary rounded-xl flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 bg-[#002045] text-white rounded-xl flex items-center justify-center shadow-xs">
                       <span className="material-symbols-outlined text-xl">smart_toy</span>
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-primary">Passage Assistant</div>
-                      <div className="text-xs text-secondary flex items-center gap-1.5 mt-0.5">
-                        <span className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span> Online
+                      <div className="text-sm font-bold text-[#002045]">Passage Assistant</div>
+                      <div className="text-xs text-[#0d9488] flex items-center gap-1.5 font-semibold">
+                        <span className="w-2 h-2 rounded-full bg-[#0d9488] shadow-[0_0_6px_rgba(13,148,136,0.6)]"></span> Online • OCR Active
                       </div>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 bg-surface-container/80 text-on-surface text-[10px] font-bold tracking-wider uppercase rounded-full shadow-sm">Secure Session</span>
+                  <span className="px-3 py-1 bg-blue-50 text-[#002045] text-[11px] font-bold rounded-full">Secure Session</span>
                 </div>
-                {/* Chat Mockup */}
-                <div className="flex flex-col gap-4">
+
+                {/* Simulated Chat */}
+                <div className="space-y-3.5">
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex-shrink-0 flex items-center justify-center mt-1">
+                    <div className="w-8 h-8 rounded-full bg-[#002045]/10 text-[#002045] flex-shrink-0 flex items-center justify-center mt-1">
                       <span className="material-symbols-outlined text-sm">smart_toy</span>
                     </div>
-                    <div className="bg-surface-container-lowest text-on-surface p-3.5 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/30 leading-relaxed">
-                      Hello! I&apos;ve successfully parsed your passport and verified your details with OCR. We are ready to review your Express Entry application. Shall we proceed?
+                    <div className="bg-slate-50 text-[#0f172a] p-3.5 rounded-2xl rounded-tl-xs text-xs border border-slate-200/70 leading-relaxed shadow-2xs">
+                      Hello! I&apos;ve parsed your passport and verified your details via in-memory OCR. Ready to review your Canada Express Entry package?
                     </div>
                   </div>
-                  <div className="flex gap-3 justify-end mt-1">
-                    <div className="bg-primary text-on-primary p-3.5 rounded-2xl rounded-tr-sm text-xs shadow-md leading-relaxed">
-                      Yes, let&apos;s review the requirements.
+                  <div className="flex gap-3 justify-end">
+                    <div className="bg-[#002045] text-white p-3.5 rounded-2xl rounded-tr-xs text-xs shadow-xs leading-relaxed max-w-[85%]">
+                      Yes, let&apos;s review and auto-fill the forms.
                     </div>
                   </div>
-                  {/* Processing State */}
-                  <div className="flex items-center gap-2.5 mt-2 px-3.5 text-secondary text-xs font-semibold bg-secondary/10 py-2.5 rounded-xl border border-secondary/20">
+                  <div className="flex items-center gap-2.5 px-3.5 text-[#0d9488] text-xs font-semibold bg-[#ccfbf1]/50 py-2.5 rounded-xl border border-[#0d9488]/20">
                     <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
                     <span>Reconciling profile with IRCC guidelines...</span>
                   </div>
                 </div>
-              </div>
-              {/* Decorative Floating Card */}
-              <div className="absolute -bottom-8 -left-8 glass bg-surface/95 rounded-2xl shadow-ambient-lg p-4 flex items-center gap-4 z-20 hover-lift transform -rotate-3 transition-transform duration-500 hover:rotate-0 border border-outline-variant">
-                <div className="w-11 h-11 rounded-full bg-secondary-container text-on-secondary-container shadow-md flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+              </motion.div>
+
+              {/* Floating Accuracy Badge */}
+              <motion.div 
+                animate={{ y: [0, 6, 0] }}
+                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.6 }}
+                className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-lg p-4 flex items-center gap-3.5 z-20 border border-slate-200"
+              >
+                <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#0d9488] flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl">verified</span>
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-on-surface">Pytesseract OCR Engine</div>
-                  <div className="text-[11px] text-secondary flex items-center gap-1.5 font-semibold mt-0.5">
-                    <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                    99.4% Accuracy Rate
-                  </div>
+                  <div className="text-xs font-bold text-[#002045]">Tesseract OCR Engine</div>
+                  <div className="text-[11px] text-[#0d9488] font-semibold">99.4% Extraction Precision</div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
-        {/* Intelligent Document Parsing Section */}
-        <section className="py-14 sm:py-20 md:py-28 bg-surface relative" id="features">
-          <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none"></div>
+        {/* ========================================================================= */}
+        {/* 2. INTELLIGENT DOCUMENT PARSING SECTION */}
+        {/* ========================================================================= */}
+        <section className="py-20 sm:py-28 bg-white border-y border-slate-200/60 relative" id="features">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
-            <div className="text-center mb-10 sm:mb-16 max-w-2xl mx-auto space-y-3">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-on-surface">Intelligent Document Parsing</h2>
-              <p className="text-xs sm:text-base text-on-surface-variant leading-relaxed">Extract precise data from complex documents and screenshots with 98%+ accuracy, eliminating manual data entry.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-              {/* Feature Card 1 */}
-              <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-2xl border border-outline-variant/40 shadow-ambient hover-lift flex flex-col justify-between space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-12 sm:mb-16 max-w-2xl mx-auto space-y-3"
+            >
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#002045] text-xs font-bold uppercase tracking-wider">
+                Capabilities
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#002045] tracking-tight">
+                Intelligent Document Parsing
+              </h2>
+              <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+                Extract precise data from complex documents, passports, CVs, and screenshots with zero manual data entry.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-40px" }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"
+            >
+              {/* Feature 1 */}
+              <motion.div 
+                variants={fadeInUp}
+                whileHover={{ y: -5 }}
+                className="bg-[#fafcff] p-7 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6"
+              >
                 <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#002045] flex items-center justify-center">
                     <span className="material-symbols-outlined text-2xl">badge</span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-on-surface">Passport &amp; ID Verification</h3>
-                  <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">Instantly extract MRZ codes, biographical data, and validity dates with in-memory OCR understanding.</p>
+                  <h3 className="text-lg font-bold text-[#002045]">Passport &amp; ID Verification</h3>
+                  <p className="text-sm text-[#475569] leading-relaxed">
+                    Instantly extract MRZ codes, biographical records, and expiration dates with in-memory OCR parsing.
+                  </p>
                 </div>
-                <div className="bg-surface-container-low p-3.5 rounded-xl flex items-center justify-between border border-outline-variant/30">
-                  <span className="text-xs font-semibold text-on-surface-variant">Confidence Score</span>
-                  <span className="text-xs font-bold text-secondary flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">verified</span> 99.8%</span>
+                <div className="bg-white p-3 rounded-xl flex items-center justify-between border border-slate-200/60">
+                  <span className="text-xs font-semibold text-[#475569]">Confidence Rate</span>
+                  <span className="text-xs font-bold text-[#0d9488] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px]">verified</span> 99.8%
+                  </span>
                 </div>
-              </div>
-              {/* Feature Card 2 */}
-              <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-2xl border border-outline-variant/40 shadow-ambient hover-lift flex flex-col justify-between space-y-6">
+              </motion.div>
+
+              {/* Feature 2 */}
+              <motion.div 
+                variants={fadeInUp}
+                whileHover={{ y: -5 }}
+                className="bg-[#fafcff] p-7 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6"
+              >
                 <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-teal-50 text-[#0d9488] flex items-center justify-center">
                     <span className="material-symbols-outlined text-2xl">description</span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-on-surface">CV &amp; Qualifications</h3>
-                  <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">Parse complex employment histories, academic credentials, and specialized skills into structured schemas.</p>
+                  <h3 className="text-lg font-bold text-[#002045]">CV &amp; Credentials Parsing</h3>
+                  <p className="text-sm text-[#475569] leading-relaxed">
+                    Automatically convert employment histories, university degrees, and language test scores into structured schemas.
+                  </p>
                 </div>
-                <div className="bg-surface-container-low p-3.5 rounded-xl flex items-center justify-between border border-outline-variant/30">
-                  <span className="text-xs font-semibold text-on-surface-variant">Confidence Score</span>
-                  <span className="text-xs font-bold text-secondary flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">verified</span> 97.5%</span>
+                <div className="bg-white p-3 rounded-xl flex items-center justify-between border border-slate-200/60">
+                  <span className="text-xs font-semibold text-[#475569]">Confidence Rate</span>
+                  <span className="text-xs font-bold text-[#0d9488] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px]">verified</span> 98.5%
+                  </span>
                 </div>
-              </div>
-              {/* Feature Card 3 */}
-              <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-2xl border border-outline-variant/40 shadow-ambient hover-lift flex flex-col justify-between space-y-6 sm:col-span-2 md:col-span-1">
+              </motion.div>
+
+              {/* Feature 3 */}
+              <motion.div 
+                variants={fadeInUp}
+                whileHover={{ y: -5 }}
+                className="bg-[#fafcff] p-7 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6"
+              >
                 <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-amber-50 text-[#d97706] flex items-center justify-center">
                     <span className="material-symbols-outlined text-2xl">account_balance</span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-on-surface">Financial Statements</h3>
-                  <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">Analyze financial capacity, reconcile transactions, and verify account balances across multiple formats.</p>
+                  <h3 className="text-lg font-bold text-[#002045]">Financial Proof Reconciliation</h3>
+                  <p className="text-sm text-[#475569] leading-relaxed">
+                    Verify account statements, salary slips, and minimum settlement fund thresholds across multiple currencies.
+                  </p>
                 </div>
-                <div className="bg-surface-container-low p-3.5 rounded-xl flex items-center justify-between border border-outline-variant/30">
-                  <span className="text-xs font-semibold text-on-surface-variant">Confidence Score</span>
-                  <span className="text-xs font-bold text-secondary flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">verified</span> 98.2%</span>
+                <div className="bg-white p-3 rounded-xl flex items-center justify-between border border-slate-200/60">
+                  <span className="text-xs font-semibold text-[#475569]">Confidence Rate</span>
+                  <span className="text-xs font-bold text-[#0d9488] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px]">verified</span> 99.1%
+                  </span>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
-        {/* Conversational Intake Section */}
-        <section className="py-14 sm:py-20 md:py-28 bg-surface-container-low border-y border-outline-variant/30 relative">
+        {/* ========================================================================= */}
+        {/* 3. AUTOMATED FORM FILLING SHOWCASE */}
+        {/* ========================================================================= */}
+        <section className="py-20 sm:py-28 bg-[#fafcff] relative overflow-hidden" id="form-filling">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-16 items-center">
-              <div className="space-y-5 sm:space-y-6">
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-on-surface">Conversational Intake</h2>
-                <p className="text-xs sm:text-base text-on-surface-variant leading-relaxed">
-                  Replace rigid forms with an adaptive AI assistant that asks contextual questions, clarifies ambiguities, and gracefully resolves data conflicts across documents.
+            <div className="grid md:grid-cols-12 gap-10 lg:gap-14 items-center">
+              {/* Left Column: Image in a Clean Floating Card */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="md:col-span-6 relative order-2 md:order-1"
+              >
+                <div className="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 group bg-white p-2.5">
+                  <img 
+                    src="/assets/formfilling.jpeg" 
+                    alt="AI Automated Immigration Form Filling" 
+                    className="w-full h-[320px] sm:h-[400px] object-cover rounded-2xl group-hover:scale-102 transition-transform duration-500 select-none"
+                  />
+                  
+                  {/* Floating Overlay Badge */}
+                  <motion.div 
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
+                    className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-md border border-slate-200 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#002045] text-white flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">draw</span>
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-[#002045]">Direct AcroForm Population</div>
+                        <div className="text-[11px] text-[#0d9488] font-semibold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#0d9488]"></span> Ready for Government Filing
+                        </div>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 bg-teal-50 text-[#0d9488] text-[10px] font-bold rounded-lg uppercase">
+                      Auto-Mapped
+                    </span>
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* Right Column: Content */}
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="md:col-span-6 space-y-6 order-1 md:order-2"
+              >
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-[#002045] text-xs font-bold w-max">
+                  <span className="material-symbols-outlined text-[15px]">assignment_turned_in</span>
+                  <span>Zero Manual Form Filling</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#002045] leading-tight tracking-tight">
+                  Turn Complex Questionnaires into <br className="hidden sm:inline"/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#002045] via-[#003870] to-[#0d9488]">
+                    Flawless PDF Petitions
+                  </span>
+                </h2>
+                <p className="text-base text-[#475569] leading-relaxed">
+                  No more copying and pasting dates, passport numbers, and employment records across repetitive PDFs. Passage automatically binds verified intake entities straight into official government AcroForm templates.
                 </p>
-                <ul className="space-y-3 sm:space-y-4">
-                  <li className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-secondary text-lg sm:text-xl mt-0.5 flex-shrink-0">check_circle</span>
-                    <span className="text-xs sm:text-sm text-on-surface font-medium leading-relaxed">Unified Applicant Profile sharing across multiple destination country applications.</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-secondary text-lg sm:text-xl mt-0.5 flex-shrink-0">check_circle</span>
-                    <span className="text-xs sm:text-sm text-on-surface font-medium leading-relaxed">Zero-hallucination policy strictly adhering to verified records.</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-secondary text-lg sm:text-xl mt-0.5 flex-shrink-0">check_circle</span>
-                    <span className="text-xs sm:text-sm text-on-surface font-medium leading-relaxed">Direct in-chat document &amp; screenshot OCR processing.</span>
-                  </li>
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs">
+                    <div className="text-2xl font-bold text-[#002045] mb-1">80%</div>
+                    <div className="text-xs font-medium text-[#475569]">Reduction in drafting time</div>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs">
+                    <div className="text-2xl font-bold text-[#0d9488] mb-1">100%</div>
+                    <div className="text-xs font-medium text-[#475569]">AcroForm schema alignment</div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 4. CONVERSATIONAL INTAKE & GLOBAL MOBILITY (Featuring BoardingPlane.jpeg) */}
+        {/* ========================================================================= */}
+        <section className="py-20 sm:py-28 bg-white border-y border-slate-200/60 relative overflow-hidden" id="intake">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
+            <div className="grid md:grid-cols-12 gap-10 lg:gap-14 items-center">
+              {/* Left Copy */}
+              <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="md:col-span-6 space-y-6"
+              >
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-teal-50 text-[#0d9488] text-xs font-bold w-max">
+                  <span className="material-symbols-outlined text-[15px]">flight</span>
+                  <span>Cross-Application Unified Profile</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#002045] leading-tight tracking-tight">
+                  Conversational Intake that <br className="hidden sm:inline" />
+                  Remembers Your Details
+                </h2>
+                <p className="text-base text-[#475569] leading-relaxed">
+                  Replace static forms with an adaptive AI assistant. Verified details (passport numbers, degrees, language levels) automatically persist across multiple destination country applications.
+                </p>
+                <ul className="space-y-3 pt-1">
+                  {[
+                    "Unified Applicant Profile sharing across Canada, Germany, UK, & USA petitions.",
+                    "Strict zero-hallucination policy adhering strictly to verified records.",
+                    "Instant in-chat document & screenshot OCR extraction."
+                  ].map((text, i) => (
+                    <motion.li 
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.15 + i * 0.1, duration: 0.4 }}
+                      className="flex items-start gap-3 p-3 bg-[#fafcff] rounded-xl border border-slate-200/70"
+                    >
+                      <span className="material-symbols-outlined text-[#0d9488] text-lg mt-0.5 flex-shrink-0">check_circle</span>
+                      <span className="text-xs sm:text-sm text-[#0f172a] font-medium leading-relaxed">{text}</span>
+                    </motion.li>
+                  ))}
                 </ul>
-              </div>
-              <div className="glass bg-surface/90 rounded-3xl p-5 sm:p-8 border border-outline-variant shadow-ambient-lg">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex gap-2.5 sm:gap-3">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 text-primary flex-shrink-0 flex items-center justify-center mt-1">
-                      <span className="material-symbols-outlined text-xs sm:text-sm">smart_toy</span>
+              </motion.div>
+
+              {/* Right Visual Card with BoardingPlane.jpeg in a Refined Editorial Frame */}
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="md:col-span-6 relative"
+              >
+                <div className="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 bg-white p-2.5">
+                  <img 
+                    src="/assets/BoardingPlane.jpeg" 
+                    alt="Passenger Boarding Aircraft" 
+                    className="w-full h-[340px] sm:h-[400px] object-cover rounded-2xl opacity-85 select-none"
+                  />
+                  
+                  {/* Floating Live Dialogue Card */}
+                  <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-md border border-slate-200 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-[#002045] text-white flex items-center justify-center text-[10px]">
+                        <span className="material-symbols-outlined text-xs">smart_toy</span>
+                      </div>
+                      <span className="text-xs font-bold text-[#002045]">Cross-Country Pre-Fill</span>
                     </div>
-                    <div className="bg-surface-container-lowest text-on-surface p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/30 leading-relaxed">
-                      I noticed you previously verified your Passport Number as A12345678. For your Germany Opportunity Card, I just need your German Language Level.
-                    </div>
-                  </div>
-                  <div className="flex gap-2.5 sm:gap-3 justify-end mt-2">
-                    <div className="bg-primary text-on-primary p-3 sm:p-4 rounded-2xl rounded-tr-sm text-xs shadow-md leading-relaxed max-w-[85%]">
-                      I have a B2 certificate from Goethe-Institut.
-                    </div>
-                  </div>
-                  <div className="flex gap-2.5 sm:gap-3 mt-2">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 text-primary flex-shrink-0 flex items-center justify-center mt-1">
-                      <span className="material-symbols-outlined text-xs sm:text-sm">smart_toy</span>
-                    </div>
-                    <div className="bg-surface-container-lowest text-on-surface p-3 sm:p-4 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-outline-variant/30 leading-relaxed">
-                      Perfect! I have recorded your German Language Level as &quot;B2&quot;. Your Opportunity Card profile is now 100% complete.
-                    </div>
+                    <p className="text-xs text-[#475569] leading-snug">
+                      &quot;I found your verified Passport Number from your Express Entry profile. Reusing it for your Germany Opportunity Card.&quot;
+                    </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
-        {/* How It Works Section */}
-        <section className="py-14 sm:py-20 md:py-28 bg-surface relative" id="how-it-works">
+        {/* ========================================================================= */}
+        {/* 5. HOW IT WORKS (WORKFLOW) */}
+        {/* ========================================================================= */}
+        <section className="py-20 sm:py-28 bg-[#fafcff] relative" id="how-it-works">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
-            <div className="text-center mb-10 sm:mb-16 max-w-2xl mx-auto space-y-3">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-on-surface">How Passage Works</h2>
-              <p className="text-xs sm:text-base text-on-surface-variant leading-relaxed">A streamlined, secure workflow from initial document ingestion to finalized government forms.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 relative">
-              {/* Step 1 */}
-              <div className="relative z-10 flex flex-col items-center text-center p-5 sm:p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-sm">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-on-primary flex items-center justify-center text-base sm:text-lg font-bold shadow-md mb-3 sm:mb-4">1</div>
-                <h4 className="text-sm sm:text-base font-bold text-on-surface mb-1.5 sm:mb-2">Ingest</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed">Securely upload unstructured documents, IDs, screenshots, or chat directly.</p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-14 max-w-2xl mx-auto space-y-3"
+            >
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#002045] text-xs font-bold uppercase tracking-wider">
+                Workflow
               </div>
-              {/* Step 2 */}
-              <div className="relative z-10 flex flex-col items-center text-center p-5 sm:p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-sm">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary-fixed text-primary flex items-center justify-center text-base sm:text-lg font-bold shadow-md mb-3 sm:mb-4">2</div>
-                <h4 className="text-sm sm:text-base font-bold text-on-surface mb-1.5 sm:mb-2">Parse &amp; OCR</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed">Tesseract-OCR and LLM models extract and classify entities with high precision.</p>
-              </div>
-              {/* Step 3 */}
-              <div className="relative z-10 flex flex-col items-center text-center p-5 sm:p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-sm">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-surface-container-high text-primary flex items-center justify-center text-base sm:text-lg font-bold shadow-md mb-3 sm:mb-4">3</div>
-                <h4 className="text-sm sm:text-base font-bold text-on-surface mb-1.5 sm:mb-2">Reconcile</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed">Conversational agent verifies missing fields and shares unified profile data.</p>
-              </div>
-              {/* Step 4 */}
-              <div className="relative z-10 flex flex-col items-center text-center p-5 sm:p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-sm">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-secondary text-on-secondary flex items-center justify-center text-base sm:text-lg font-bold shadow-md mb-3 sm:mb-4"><span className="material-symbols-outlined text-xl sm:text-2xl">check</span></div>
-                <h4 className="text-sm sm:text-base font-bold text-on-surface mb-1.5 sm:mb-2">Generate</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed">Automatically populate verified government forms and review profiles.</p>
-              </div>
-            </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#002045] tracking-tight">
+                How Passage Works
+              </h2>
+              <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+                A secure, 4-step pipeline from raw document uploads to finalized petition packets.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-40px" }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              {[
+                { step: "01", title: "Ingest", desc: "Upload PDFs, scans, CVs, or chat naturally with the assistant.", icon: "cloud_upload" },
+                { step: "02", title: "Parse & OCR", desc: "Tesseract OCR & LLM extract verified fields strictly in RAM.", icon: "document_scanner" },
+                { step: "03", title: "Reconcile", desc: "Intake assistant prompts only for verified missing schema items.", icon: "rule" },
+                { step: "04", title: "Generate", desc: "Download compliant, submission-ready AcroForm petition PDFs.", icon: "check_circle" }
+              ].map((item) => (
+                <motion.div 
+                  key={item.step}
+                  variants={fadeInUp}
+                  whileHover={{ y: -4 }}
+                  className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-[#0d9488] bg-teal-50 px-2.5 py-1 rounded-lg">STEP {item.step}</span>
+                    <span className="material-symbols-outlined text-xl text-[#002045]">{item.icon}</span>
+                  </div>
+                  <h4 className="text-base font-bold text-[#002045]">{item.title}</h4>
+                  <p className="text-xs text-[#475569] leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </section>
 
-        {/* Security / Compliance Section */}
-        <section className="py-14 sm:py-20 md:py-28 bg-surface-container-lowest border-y border-outline-variant/40 relative overflow-hidden" id="trust">
+        {/* ========================================================================= */}
+        {/* 6. SECURITY & COMPLIANCE */}
+        {/* ========================================================================= */}
+        <section className="py-20 sm:py-28 bg-white border-y border-slate-200/60 relative" id="trust">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
-            <div className="text-center mb-10 sm:mb-16 max-w-2xl mx-auto space-y-3">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-on-surface">Enterprise-Grade Compliance &amp; Security</h2>
-              <p className="text-xs sm:text-base text-on-surface-variant leading-relaxed">Your applicants&apos; sensitive data is protected by industry-leading security protocols and compliance standards.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
-              <div className="bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant text-center hover-lift shadow-sm">
-                <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined text-2xl text-primary">shield_locked</span>
-                </div>
-                <h4 className="text-base font-bold mb-2 text-on-surface">Zero Image Storage</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed">All document uploads are processed in ephemeral RAM without saving photo files to disk.</p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-12 max-w-2xl mx-auto space-y-3"
+            >
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 text-[#0d9488] text-xs font-bold uppercase tracking-wider">
+                Security First
               </div>
-              <div className="bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant text-center hover-lift shadow-sm">
-                <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined text-2xl text-primary">policy</span>
-                </div>
-                <h4 className="text-base font-bold mb-2 text-on-surface">GDPR &amp; PIPEDA Aligned</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed">Strict adherence to global data privacy regulations and localized PostgreSQL storage.</p>
-              </div>
-              <div className="bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant text-center hover-lift shadow-sm">
-                <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined text-2xl text-primary">lock</span>
-                </div>
-                <h4 className="text-base font-bold mb-2 text-on-surface">AES-256 Encryption</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed">All application state and entity extractions are encrypted at rest and in transit.</p>
-              </div>
-            </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#002045] tracking-tight">
+                Enterprise Compliance &amp; Zero-Retention
+              </h2>
+              <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+                Your applicants&apos; sensitive data is protected by industry-leading security and privacy protocols.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-40px" }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              {[
+                { icon: "shield_locked", title: "Zero Image Storage", desc: "All documents are parsed strictly in ephemeral RAM byte streams without writing photos to disk." },
+                { icon: "policy", title: "GDPR & PIPEDA Aligned", desc: "Strict adherence to international data sovereignty regulations and localized database storage." },
+                { icon: "lock", title: "AES-256 Encryption", desc: "All verified entity records and application state are encrypted at rest and in transit." }
+              ].map((item) => (
+                <motion.div 
+                  key={item.title}
+                  variants={fadeInUp}
+                  whileHover={{ y: -4 }}
+                  className="bg-[#fafcff] p-7 rounded-2xl border border-slate-200/80 text-center shadow-2xs space-y-3"
+                >
+                  <div className="w-12 h-12 mx-auto bg-blue-50 text-[#002045] rounded-xl flex items-center justify-center">
+                    <span className="material-symbols-outlined text-2xl">{item.icon}</span>
+                  </div>
+                  <h4 className="text-base font-bold text-[#002045]">{item.title}</h4>
+                  <p className="text-xs text-[#475569] leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-14 sm:py-20 md:py-24 bg-surface-container-low text-center relative">
-          <div className="max-w-3xl mx-auto px-4 sm:px-8 relative z-10 space-y-5 sm:space-y-6">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-on-surface">Ready to transform your immigration workflows?</h2>
-            <p className="text-xs sm:text-base text-on-surface-variant max-w-xl mx-auto leading-relaxed">Join applicants and law firms using Passage to process immigration applications with AI speed and precision.</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-2">
-              <button onClick={() => handleAuth('client', '/chat')} className="w-full sm:w-auto bg-primary hover:bg-primary-container transition-colors text-on-primary px-8 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover-lift shadow-ambient-lg cursor-pointer">
-                Start Free Application
-              </button>
-              <button onClick={() => handleAuth('admin', '/admin')} className="w-full sm:w-auto glass bg-surface-container text-on-surface px-8 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-surface-container-high transition-colors shadow-sm border border-outline-variant cursor-pointer">
-                Explore Admin Dashboard
-              </button>
+        {/* ========================================================================= */}
+        {/* 7. CINEMATIC CTA HERO BANNER (Airport Terminal Background) */}
+        {/* ========================================================================= */}
+        <section className="relative py-20 sm:py-28 px-4 sm:px-8 overflow-hidden bg-[#fafcff]">
+          <div className="max-w-6xl mx-auto relative rounded-3xl overflow-hidden border border-slate-200/90 shadow-xl min-h-[420px] flex items-center justify-center p-8 sm:p-14 text-center">
+            {/* Airport Terminal Background with Soft Ambient Tint */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <img 
+                src="/assets/Airport_terminal_at_dusk_202608310540.jpeg" 
+                alt="International Airport Terminal at Dusk" 
+                className="w-full h-full object-cover object-center opacity-78 select-none scale-102"
+              />
+              {/* Soft luminous white scrim for high contrast and pleasant readability */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/70 to-white/85"></div>
             </div>
+
+            {/* Inner Content Card */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="relative z-10 max-w-2xl mx-auto space-y-6"
+            >
+              <div className="w-12 h-12 mx-auto rounded-xl bg-[#002045] text-white flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-2xl">flight_takeoff</span>
+              </div>
+              
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#002045] leading-tight tracking-tight">
+                Ready to simplify your <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#002045] via-[#003870] to-[#0d9488]">
+                  immigration process?
+                </span>
+              </h2>
+              <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+                Join applicants and legal teams processing immigration petitions with AI precision and automated form completion.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-3.5 pt-2">
+                <motion.button 
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleAuth('client', '/chat')} 
+                  className="bg-[#002045] hover:bg-[#061a33] text-white text-xs sm:text-sm font-bold px-8 py-3.5 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>Start Free Application</span>
+                  <span className="material-symbols-outlined text-base">arrow_forward</span>
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleAuth('admin', '/admin')} 
+                  className="bg-white hover:bg-slate-50 text-[#002045] text-xs sm:text-sm font-bold px-7 py-3.5 rounded-xl shadow-xs border border-slate-200 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>Explore Admin Dashboard</span>
+                  <span className="material-symbols-outlined text-base">admin_panel_settings</span>
+                </motion.button>
+              </div>
+            </motion.div>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-surface border-t border-outline-variant/30 py-8 sm:py-12">
+      {/* ========================================================================= */}
+      {/* FOOTER */}
+      {/* ========================================================================= */}
+      <footer className="bg-white border-t border-slate-200/80 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-center md:text-left">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-xs group-hover:scale-105 transition-transform">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-8 h-8 rounded-lg bg-[#002045] flex items-center justify-center text-white shadow-xs">
                 <span className="material-symbols-outlined text-lg font-bold">flight_takeoff</span>
               </div>
               <div className="text-left">
-                <span className="text-sm font-bold text-primary block leading-tight">Passage</span>
-                <span className="text-[9px] font-semibold text-secondary uppercase tracking-wider block">AI Platform</span>
+                <span className="text-sm font-bold text-[#002045] block leading-tight">Passage</span>
+                <span className="text-[9px] font-semibold text-[#0d9488] uppercase tracking-wider block">AI Immigration</span>
               </div>
             </Link>
-            <div className="text-[11px] sm:text-xs text-on-surface-variant">
-              © 2026 Passage Immigration AI Platform. All rights reserved.
+            <div className="text-xs text-[#64748b]">
+              © 2026 Passage Immigration AI. All rights reserved.
             </div>
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs font-semibold text-on-surface-variant">
-              <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-              <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
-              <a className="hover:text-primary transition-colors" href="#">Security</a>
+            <div className="flex flex-wrap justify-center gap-6 text-xs font-semibold text-[#64748b]">
+              <a className="hover:text-[#002045] transition-colors" href="#">Privacy Policy</a>
+              <a className="hover:text-[#002045] transition-colors" href="#">Terms of Service</a>
+              <a className="hover:text-[#002045] transition-colors" href="#">Security</a>
             </div>
           </div>
         </div>

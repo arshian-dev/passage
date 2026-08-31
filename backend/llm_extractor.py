@@ -1,12 +1,29 @@
 import json
 import os
+import uuid
 from dotenv import load_dotenv
 from openai import OpenAI
+from seed_data import IMMIGRATION_KNOWLEDGE_BASE, STANDARD_FIELD_NAME_MAP, standardize_field_names
 
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+
+def normalize_extracted_keys(data: dict) -> dict:
+    """
+    Normalizes keys in extracted_data dictionary to standard human-readable names.
+    (e.g., converts 'US_FN' or 'first_name' to 'First Name').
+    """
+    if not isinstance(data, dict):
+        return {}
+    normalized = {}
+    for k, v in data.items():
+        if v is not None and str(v).strip() != "":
+            k_norm = str(k).strip().lower().replace(" ", "_").replace("-", "_")
+            std_key = STANDARD_FIELD_NAME_MAP.get(k_norm, k)
+            normalized[std_key] = v
+    return normalized
 
 def extract_entities_with_llm(raw_text: str, schema: dict) -> dict:
     """
@@ -20,10 +37,12 @@ def extract_entities_with_llm(raw_text: str, schema: dict) -> dict:
         fields_description = json.dumps(schema.get("required_fields", []))
         
         system_prompt = (
-            "You are an expert data extraction assistant. "
-            "Extract the requested information from the provided document text according to the following fields: "
+            "You are an expert data extraction assistant.\n"
+            "Extract the requested information from the provided document text according to the following fields:\n"
             f"{fields_description}\n\n"
-            "CRITICAL INSTRUCTION: If the schema requires separate fields for 'first/given name' and 'last/family name', but the text provides them together, you MUST separate them accurately.\n\n"
+            "CRITICAL INSTRUCTIONS:\n"
+            "1. If the schema requires separate fields for 'First Name' / 'Given Name' and 'Last Name' / 'Family Name', but the text provides a full name, you MUST separate them accurately.\n"
+            "2. Always use standard human-readable field names matching the schema (e.g. 'First Name', 'Last Name', 'Passport Number', 'Date of Birth'). NEVER use abbreviations or database variable codes like 'US_FN' or 'us_ln'.\n\n"
             "Return a JSON object with EXACTLY two top-level keys:\n"
             "1. 'extracted_data': A dictionary where keys are field names (use the 'name' from the fields) and values are the extracted values (or null if missing).\n"
             "2. 'confidence_scores': A dictionary matching the keys of extracted_data with float values between 0.0 and 1.0 indicating your confidence."
@@ -40,12 +59,16 @@ def extract_entities_with_llm(raw_text: str, schema: dict) -> dict:
         )
         
         result_json = response.choices[0].message.content
-        return json.loads(result_json)
+        parsed = json.loads(result_json)
+        
+        # Normalize keys in extracted_data
+        if "extracted_data" in parsed and isinstance(parsed["extracted_data"], dict):
+            parsed["extracted_data"] = normalize_extracted_keys(parsed["extracted_data"])
+            
+        return parsed
     except Exception as e:
         print(f"Extraction error: {e}")
         return mock_extraction()
-
-from seed_data import IMMIGRATION_KNOWLEDGE_BASE
 
 def process_chat_message_with_llm(message: str, case_state: dict, schema: dict, chat_history: list = None) -> dict:
     """
@@ -108,7 +131,7 @@ def process_chat_message_with_llm(message: str, case_state: dict, schema: dict, 
             f"{country_status_directive}\n\n"
             "INTELLIGENCE & ADVISORY DIRECTIVES:\n"
             "1. ALERT & INFORMED ADVISORY:\n"
-            "   - When the user asks for options, advice, or comparisons (e.g. 'What countries do you support?', 'What options do I have for Germany?', 'What visa is good for a software engineer?', 'What are the requirements for Canada Express Entry?'), use the IMMIGRATION KNOWLEDGE BASE above to provide clear, actionable bullet points.\n"
+            "   - When the user asks for options, advice, or comparisons (e.g. 'What countries do you support?', 'What options do I have for Germany?', 'What visa is good for a software engineer?', 'What are the requirements for US B-2 or Canada Express Entry?'), use the IMMIGRATION KNOWLEDGE BASE above to provide clear, actionable bullet points.\n"
             "   - Highlight key eligibility points and required documents.\n"
             "2. NO FORGETFULNESS & NO REPETITIVE QUESTIONS:\n"
             "   - NEVER ask for information that the client has already told you or that is stored in 'Currently Saved Data' or 'Verified Unified Applicant Profile'.\n"
@@ -119,10 +142,10 @@ def process_chat_message_with_llm(message: str, case_state: dict, schema: dict, 
             "4. STRICT ANTI-HALLUCINATION GUARDRAILS:\n"
             "   - NEVER fabricate applicant personal details (dates, scores, passport numbers).\n"
             "   - ONLY extract facts explicitly provided by the user.\n"
-            "5. FORM DATA EXTRACTION:\n"
+            "5. CONSISTENT FORM DATA EXTRACTION:\n"
             "   - Extract any personal/application details for fields in the schema.\n"
-            "   - If user gives a full name (e.g. 'Ahmed Khan'), split into separate First Name / Last Name or Given Name / Family Name matching the schema field names.\n"
-            "   - Keys in 'new_extracted_data' MUST match the exact 'name' string from the schema.\n"
+            "   - If user gives a full name (e.g. 'Ahmed Khan'), split into separate 'First Name' and 'Last Name'.\n"
+            "   - Keys in 'new_extracted_data' MUST always use clean, standard human-readable field names (e.g. 'First Name', 'Last Name', 'Date of Birth', 'Passport Number', 'Email', 'Phone Number', 'Purpose of Visit'). NEVER use abbreviations or variable codes like 'US_FN' or 'b2_fn'.\n"
             "6. CONVERSATIONAL REPLY:\n"
             "   - Be sharp, warm, and proactive. Answer any user questions directly, then ask for the NEXT missing required field with clear examples.\n"
             "   - If all required fields are complete, confirm readiness for application dossier generation and review!\n\n"
@@ -138,7 +161,6 @@ def process_chat_message_with_llm(message: str, case_state: dict, schema: dict, 
         # Assemble message list with recent chat history (up to last 12 turns)
         messages_payload = [{"role": "system", "content": system_prompt}]
         if chat_history and isinstance(chat_history, list):
-            # Take last 12 history items
             recent_history = chat_history[-12:]
             for turn in recent_history:
                 role = "assistant" if turn.get("role") in ["agent", "assistant"] else "user"
@@ -165,6 +187,10 @@ def process_chat_message_with_llm(message: str, case_state: dict, schema: dict, 
         if has_visa and (not parsed.get("visa_type") or parsed.get("visa_type") in ["null", "None", "General"]):
             parsed["visa_type"] = visa_type
             
+        # Normalize keys in new_extracted_data
+        if "new_extracted_data" in parsed and isinstance(parsed["new_extracted_data"], dict):
+            parsed["new_extracted_data"] = normalize_extracted_keys(parsed["new_extracted_data"])
+            
         return parsed
     except Exception as e:
         print(f"Chat error: {e}")
@@ -173,14 +199,14 @@ def process_chat_message_with_llm(message: str, case_state: dict, schema: dict, 
 def mock_extraction():
     return {
         "extracted_data": {
-            "Given Name": "Alexander",
-            "Family Name": "Mercer",
+            "First Name": "Alexander",
+            "Last Name": "Mercer",
             "Passport Number": "A12345678",
             "Total Years Experience": 4.5
         },
         "confidence_scores": {
-            "Given Name": 0.95,
-            "Family Name": 0.90,
+            "First Name": 0.95,
+            "Last Name": 0.90,
             "Passport Number": 0.99,
             "Total Years Experience": 0.88
         }
@@ -190,8 +216,8 @@ def parse_form_fields_from_document_with_llm(raw_text: str) -> dict:
     """
     Analyzes raw text extracted via Tesseract OCR from an uploaded guidelines or form document,
     and extracts country name, visa category, and structured form requirement fields.
+    Standardizes common fields (First Name, Last Name, Date of Birth, etc.) across all forms.
     """
-    import uuid
     default_fields = [
         {"id": str(uuid.uuid4())[:8], "name": "First Name", "type": "text", "required": True},
         {"id": str(uuid.uuid4())[:8], "name": "Last Name", "type": "text", "required": True},
@@ -213,13 +239,15 @@ def parse_form_fields_from_document_with_llm(raw_text: str) -> dict:
         system_prompt = (
             "You are an expert immigration form schema generator. Analyze the provided OCR text extracted from an official visa application form, screenshot, or guideline document.\n\n"
             "Identify the destination country, the visa type/subclass if mentioned, and extract a comprehensive list of all required and optional input fields an applicant must provide.\n\n"
+            "CRITICAL FIELD NAMING RULE:\n"
+            "Common applicant fields MUST use clean, standard human-readable names (e.g. 'First Name', 'Last Name', 'Date of Birth', 'Passport Number', 'Email', 'Phone Number', 'Nationality', 'Current Occupation'). NEVER use variable codes or prefixes like 'US_FN', 'US_LN', 'CAN_DOB'.\n\n"
             "Return a JSON object with EXACTLY these keys:\n"
             "1. 'country_code': string (e.g. 'Canada', 'Germany', 'United States', 'Australia', 'United Kingdom', etc. or null if unknown)\n"
-            "2. 'visa_type': string (e.g. 'Express Entry', 'Opportunity Card', 'O-1 Alien of Extraordinary Ability', 'Student Visa', etc. or null if unknown)\n"
+            "2. 'visa_type': string (e.g. 'Express Entry', 'B-2 Tourist Visa', 'Opportunity Card', 'O-1 Alien of Extraordinary Ability', 'Student Visa', etc. or null if unknown)\n"
             "3. 'summary': a brief 1-sentence description of the form\n"
             "4. 'fields': an array of field objects with keys:\n"
             "   - 'id': short unique alphanumeric string\n"
-            "   - 'name': clear descriptive field name (e.g. 'First Name', 'Passport Number', 'Monthly Income', 'IELTS Overall Band', etc.)\n"
+            "   - 'name': clear descriptive standard field name (e.g. 'First Name', 'Passport Number', 'Monthly Income', etc.)\n"
             "   - 'type': one of ['text', 'number', 'date', 'email', 'file']\n"
             "   - 'required': boolean (true for mandatory fields, false for optional fields)"
         )
@@ -237,7 +265,8 @@ def parse_form_fields_from_document_with_llm(raw_text: str) -> dict:
         data = json.loads(response.choices[0].message.content)
         fields = data.get("fields", [])
         
-        # Ensure unique IDs
+        # Ensure unique IDs and standard field names
+        fields = standardize_field_names(fields)
         for f in fields:
             if not f.get("id"):
                 f["id"] = str(uuid.uuid4())[:8]
@@ -262,4 +291,3 @@ def mock_chat_response(message):
         "new_extracted_data": {},
         "reply": "I'm having trouble connecting to my AI brain. Could you provide your next missing field?"
     }
-

@@ -89,7 +89,9 @@ def list_cases(db: Session = Depends(get_db)):
         results = []
         for c in cases:
             extracted = c.extracted_data or {}
-            missing = c.missing_fields or []
+            schema = get_schema_for_country(c.target_country, c.visa_type, db)
+            schema_fields = schema.get("required_fields", [])
+            missing = calculate_missing_fields(extracted, schema_fields)
             total = len(extracted) + len(missing)
             completeness = int((len(extracted) / total) * 100) if total > 0 else (100 if len(extracted) > 0 else 0)
             
@@ -278,7 +280,9 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
             }
             
         extracted = case.extracted_data or {}
-        missing = case.missing_fields or []
+        schema = get_schema_for_country(case.target_country, case.visa_type, db)
+        schema_fields = schema.get("required_fields", [])
+        missing = calculate_missing_fields(extracted, schema_fields)
         total = len(extracted) + len(missing)
         completeness = int((len(extracted) / total) * 100) if total > 0 else (100 if len(extracted) > 0 else 0)
         chat_hist = getattr(case, "chat_history", None) or []
@@ -434,11 +438,15 @@ async def save_form_config(form_config: dict, db: Session = Depends(get_db)):
     """
     Saves the user-edited form configuration for a specific country & visa type (or GENERIC).
     """
-    fields = form_config.get("fields", [])
-    country_code = form_config.get("country_code", "GENERIC").upper().strip() or "GENERIC"
+    from seed_data import standardize_field_names
+    fields = standardize_field_names(form_config.get("fields", []))
+    country_code = form_config.get("country_code", "GENERIC").strip() or "GENERIC"
     visa_type = form_config.get("visa_type", "GENERIC").strip() or "GENERIC"
     
-    schema = db.query(models.CountrySchema).filter_by(country_code=country_code, visa_type=visa_type).first()
+    schema = db.query(models.CountrySchema).filter(
+        models.CountrySchema.country_code.ilike(country_code),
+        models.CountrySchema.visa_type.ilike(visa_type)
+    ).first()
     if not schema:
         schema = models.CountrySchema(country_code=country_code, visa_type=visa_type, version="1.0", required_fields=fields)
         db.add(schema)
@@ -450,20 +458,36 @@ async def save_form_config(form_config: dict, db: Session = Depends(get_db)):
 def get_schema_for_country(country: Optional[str], visa: Optional[str], db: Session) -> dict:
     """
     Resolves the most relevant form schema for a country/visa pair, prioritizing exact matches and falling back to country or GENERIC.
+    Supports smart aliases like B-2 / B2 / Tourist / Visitor.
     """
     if country and country not in ["GENERIC", "Unspecified", "null", "None", ""]:
+        # Normalize country alias
+        country_query = country
+        if country.upper() in ["US", "USA"]:
+            country_query = "United States"
+
         # 1. Try exact/substring match on both country and visa
         if visa and visa not in ["GENERIC", "General", "null", "None", ""]:
+            # Special alias for B-2 / Tourist / Visitor
+            visa_query = visa
+            if any(term in visa.lower() for term in ["b-2", "b2", "tourist", "visitor"]):
+                matched_b2 = db.query(models.CountrySchema).filter(
+                    models.CountrySchema.country_code.ilike(f"%{country_query}%"),
+                    models.CountrySchema.visa_type.ilike("%B-2%")
+                ).first()
+                if matched_b2 and matched_b2.required_fields:
+                    return {"required_fields": matched_b2.required_fields, "country_code": matched_b2.country_code, "visa_type": matched_b2.visa_type}
+
             matched_both = db.query(models.CountrySchema).filter(
-                models.CountrySchema.country_code.ilike(f"%{country}%"),
-                models.CountrySchema.visa_type.ilike(f"%{visa}%")
+                models.CountrySchema.country_code.ilike(f"%{country_query}%"),
+                models.CountrySchema.visa_type.ilike(f"%{visa_query}%")
             ).first()
             if matched_both and matched_both.required_fields:
                 return {"required_fields": matched_both.required_fields, "country_code": matched_both.country_code, "visa_type": matched_both.visa_type}
         
         # 2. Try matching country code
         matched_country = db.query(models.CountrySchema).filter(
-            models.CountrySchema.country_code.ilike(f"%{country}%")
+            models.CountrySchema.country_code.ilike(f"%{country_query}%")
         ).first()
         if matched_country and matched_country.required_fields:
             return {"required_fields": matched_country.required_fields, "country_code": matched_country.country_code, "visa_type": matched_country.visa_type}
@@ -476,16 +500,46 @@ def get_schema_for_country(country: Optional[str], visa: Optional[str], db: Sess
     return {"required_fields": []}
 
 def calculate_missing_fields(extracted_data: dict, schema_fields: list) -> list:
+    """
+    Calculates missing required fields by comparing extracted_data against schema_fields.
+    Performs case-insensitive, whitespace-trimmed, and alias-aware normalization using STANDARD_FIELD_NAME_MAP.
+    """
+    from seed_data import STANDARD_FIELD_NAME_MAP
     missing = []
-    normalized = {k.lower().replace(" ", "_").replace("-", "_"): v for k, v in (extracted_data or {}).items()}
-    for field in schema_fields:
-        name = field.get("name", "")
-        norm_key = name.lower().replace(" ", "_").replace("-", "_")
-        val = (extracted_data or {}).get(name)
+    
+    extracted = extracted_data or {}
+    lookup = {}
+    for k, v in extracted.items():
+        if v is not None and str(v).strip() != "":
+            lookup[k] = v
+            k_norm = str(k).strip().lower().replace(" ", "_").replace("-", "_")
+            lookup[k_norm] = v
+            std_k = STANDARD_FIELD_NAME_MAP.get(k_norm)
+            if std_k:
+                lookup[std_k] = v
+                lookup[std_k.lower().replace(" ", "_").replace("-", "_")] = v
+
+    for field in (schema_fields or []):
+        if not field.get("required"):
+            continue
+        name = str(field.get("name", "")).strip()
+        if not name:
+            continue
+        norm_name = name.lower().replace(" ", "_").replace("-", "_")
+        std_name = STANDARD_FIELD_NAME_MAP.get(norm_name, name)
+        
+        val = (
+            lookup.get(name) or
+            lookup.get(norm_name) or
+            lookup.get(std_name) or
+            lookup.get(std_name.lower().replace(" ", "_").replace("-", "_")) or
+            lookup.get(str(field.get("id", "")).strip()) or
+            lookup.get(str(field.get("id", "")).strip().lower())
+        )
+        
         if val is None or str(val).strip() == "":
-            val = normalized.get(norm_key)
-        if field.get("required") and (val is None or str(val).strip() == ""):
             missing.append(name)
+            
     return missing
 
 @app.post("/api/intake/upload")
@@ -635,10 +689,18 @@ async def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(case)
             
+        extracted = case.extracted_data or {}
+        missing = case.missing_fields or []
+        total = len(extracted) + len(missing)
+        completeness = int((len(extracted) / total) * 100) if total > 0 else (100 if len(extracted) > 0 else 0)
+        
         return {
             "reply": reply_text,
             "target_country": case.target_country,
             "visa_type": case.visa_type,
+            "extracted_data": extracted,
+            "missing_fields": missing,
+            "completeness": completeness,
             "chat_history": case.chat_history or []
         }
     except Exception as e:
